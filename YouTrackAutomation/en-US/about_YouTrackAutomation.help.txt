@@ -1,0 +1,8 @@
+TOPIC
+    about_YouTrackAutomation
+
+SHORT DESCRIPTION
+    YouTrackAutomation is a PowerShell module for...
+
+LONG DESCRIPTION
+    The YouTrackAutomation PowerShell module...
