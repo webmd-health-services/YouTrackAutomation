@@ -16,6 +16,27 @@ Build:
       Path: appveyor
       Argument: [ UpdateBuild, -Version, "$(WHISKEY_SEMVER2)+$(WHISKEY_BUILD_NUMBER)" ]
 
+- NuGetRestore:
+    ExceptDuring: Clean
+    Path: ./packages.config
+    Argument:
+    - "-PackagesDirectory"
+    - $(WHISKEY_BUILD_ROOT)\packages
+
+- PowerShell:
+    ExceptDuring: Clean
+    ScriptBlock: |
+        $binPath = Join-Path -Path $(WHISKEY_BUILD_ROOT) -ChildPath "YouTrackAutomation\bin"
+        $nJsonPath = Join-Path -Path $(WHISKEY_BUILD_ROOT) -ChildPath "packages\Newtonsoft.Json.13.0.1\lib\netstandard2.0\Newtonsoft.Json.dll"
+        $ytSharpPath = Join-Path -Path $(WHISKEY_BUILD_ROOT) -ChildPath "packages\YouTrackSharp.2022.3.1\lib\netstandard2.0\YouTrackSharp.dll"
+        if (-not (Test-Path -Path $binPath))
+        {
+            New-Item -Path $binPath -ItemType Directory | Out-Null
+        }
+        Copy-Item -Path $nJsonPath -Destination $binPath
+        Copy-Item -Path $ytSharpPath -Destination $binPath
+
+
 # Dot-sourcing files is expensive. Move all functions into .psm1 file to improve import speed. Do this before testing
 # to ensure the module still works.
 - MergeFile:
