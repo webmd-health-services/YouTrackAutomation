@@ -1,8 +1,4 @@
 {
 	"PSModules": [
-		{
-			"Name": "PlaywrightAutomation",
-			"Version": "0.*"
-		}
 	]
 }
