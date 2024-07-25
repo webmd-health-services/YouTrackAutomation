@@ -1,9 +1,4 @@
 {
-  "PSModules": [
-    {
-      "name": "PlaywrightAutomation",
-      "version": "0.2.1",
-      "repositorySourceLocation": "https://www.powershellgallery.com/api/v2"
-    }
-  ]
+	"PSModules": [
+	]
 }
