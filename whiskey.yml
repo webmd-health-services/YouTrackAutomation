@@ -73,6 +73,10 @@ Build:
 - PublishPowerShellModule:
     Path: YouTrackAutomation
 
+- PowerShell:
+    OnlyBy: BuildServer
+    ScriptBlock: Get-Process | Where-Object { $_.Name -like 'java*' } | Stop-Process -Force
+
 - Exec:
     OnlyBy: BuildServer
     Path: appveyor
