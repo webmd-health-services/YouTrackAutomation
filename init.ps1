@@ -28,24 +28,54 @@ $ErrorActionPreference = 'Stop'
 $InformationPreference = 'Continue'
 
 Get-Process | Where-Object { $_.Name -like 'java*' } | Stop-Process -Force
-$archivePath = Join-Path -Path $PSScriptRoot -ChildPath 'youtrack-2024.2.37269.zip'
-$destinationPath = Join-Path -Path $PSScriptRoot -ChildPath 'youtrack-2024.2.37269'
+$outputPath = Join-Path -Path $PSScriptRoot -ChildPath '.output'
+$archivePath = Join-Path -Path $outputPath -ChildPath 'youtrack.zip'
+$youtrackVersion = '2024.2.37269'
+if (-not (Test-Path -Path $archivePath))
+{
+    Invoke-WebRequest -Uri "https://download-cdn.jetbrains.com/charisma/youtrack-${youtrackVersion}.zip" -OutFile $archivePath
+}
+
+$dataArchivePath = Join-Path -Path $PSScriptRoot -ChildPath 'ytconfig.zip'
+$destinationPath = Join-Path -Path $outputPath -ChildPath 'youtrack'
+
 if (Test-Path -Path $destinationPath)
 {
     Remove-Item -Path $destinationPath -Recurse -Force
 }
 
 Expand-Archive -Path $archivePath -Force -DestinationPath $destinationPath
-$batPath = Join-Path -Path $destinationPath -ChildPath 'youtrack-2024.2.37269\bin\youtrack.bat' -Resolve
-if ($PSVersionTable.PSEdition -eq 'Core' -and -not $IsWindows)
+$nestedPath = Join-Path -Path $destinationPath -ChildPath "youtrack-${youtrackVersion}"
+Move-Item -Path (Join-Path -Path $nestedPath -ChildPath '*') -Destination $destinationPath -Force
+Remove-Item -Recurse -Force -Path $nestedPath
+
+$dataArchiveExtractPath = Join-Path -Path $outputPath -ChildPath 'ytconfig'
+if (-not (Test-Path -Path $dataArchiveExtractPath))
 {
-    $batPath.Replace('.bat', '.sh')
+    Expand-Archive -Path $dataArchivePath -Force -DestinationPath $dataArchiveExtractPath
+}
+Copy-Item -Path (Join-Path -Path $dataArchiveExtractPath -ChildPath '*') -Destination $destinationPath -Recurse -Force
+
+
+$batPath = Join-Path -Path $destinationPath -ChildPath 'bin\youtrack.bat' -Resolve
+if (-not $env:OS)
+{
+    $batPath = Join-Path -Path $destinationPath -ChildPath 'bin\youtrack.sh' -Resolve
+    $env:JAVA_TOOL_OPTIONS = ''
 }
 & $batPath start --no-browser
 
-$packageRoot = Join-Path -Path $PSScriptRoot -ChildPath 'packages'
-
-if (-not (Test-Path -Path $packageRoot))
+Write-Information -MessageData 'Waiting for YouTrack to finish warming up.'
+while ($true)
 {
-    New-Item -Path $packageRoot -ItemType Directory
+    try
+    {
+        Invoke-WebRequest -Uri 'http://localhost:8080/' -Method Get -UseBasicParsing | Out-Null
+        break
+    }
+    catch
+    {
+        Start-Sleep -Seconds 5
+    }
 }
+Write-Information -MessageData 'YouTrack is ready for requests.'
