@@ -14,8 +14,7 @@ Describe 'New-XWSession' {
         $apiKey = 'my-api-key'
         $session = New-YTSession -Url $url -ApiToken $apiKey
         $session | Should -Not -BeNullOrEmpty
-        $session.Url | Should -Be ([uri]$url)
-        $session.Connection | Should -Not -BeNullOrEmpty
+        $session.Url | Should -Be "$url/api/"
         $session.ApiToken | Should -Be $apiKey
     }
 }

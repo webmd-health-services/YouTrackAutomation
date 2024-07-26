@@ -27,11 +27,8 @@ function New-YTSession
         [String] $ApiToken
     )
 
-    $connection = [YouTrackSharp.BearerTokenConnection]::new($Url, $ApiToken)
-
     return [pscustomobject]@{
-        Connection = $connection
-        Url = $Url
+        Url = "$Url/api/"
         ApiToken = $ApiToken
     }
 }
