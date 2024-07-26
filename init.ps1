@@ -37,6 +37,10 @@ if (Test-Path -Path $destinationPath)
 
 Expand-Archive -Path $archivePath -Force -DestinationPath $destinationPath
 $batPath = Join-Path -Path $destinationPath -ChildPath 'youtrack-2024.2.37269\bin\youtrack.bat' -Resolve
+if ($PSVersionTable.PSEdition -eq 'Core' -and -not $IsWindows)
+{
+    $batPath.Replace('.bat', '.sh')
+}
 & $batPath start --no-browser
 
 $packageRoot = Join-Path -Path $PSScriptRoot -ChildPath 'packages'
