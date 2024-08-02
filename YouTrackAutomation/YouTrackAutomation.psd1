@@ -79,6 +79,7 @@
         'Get-YTIssue',
         'Get-YTProject',
         'Invoke-YTRestMethod',
+        'New-YTIssue',
         'New-YTProject',
         'New-YTSession'
     )

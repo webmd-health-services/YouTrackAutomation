@@ -53,7 +53,7 @@ function Get-YTIssue
     Set-StrictMode -Version 'Latest'
     Use-CallerPreference -Cmdlet $PSCmdlet -SessionState $ExecutionContext.SessionState
 
-    $fields = 'id,idReadable,summary,description,project(name),reporter(name),attachments(id,name,url,created,author(name))'
+    $fields = 'id,idReadable,summary,description,project(name,shortName),reporter(name),attachments(id,name,url,created,author(name))'
 
     if ($AdditionalFields)
     {
