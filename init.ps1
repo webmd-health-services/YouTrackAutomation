@@ -10,7 +10,6 @@ YouTrackAutomation module. It:
 * Installs YouTrack to the current folder from an pre-configured YouTrack instance.
 * Configures the YouTrack instance to use the default port of 8080 and listen on 'localhost'.
 * Sets up the default user account with the username 'admin' and password 'admin'.
-* Installs the YouTrackSharp and Newtonsoft.Json modules to the `$PSScriptRoot\packages`.
 
 .EXAMPLE
 .\init.ps1
@@ -19,8 +18,7 @@ Demonstrates how to call this script.
 #>
 [CmdletBinding()]
 param(
-    # The source to use when installing packages.
-    [String] $Source
+    $YouTrackVersion = '2024.2.37269'
 )
 
 Set-StrictMode -Version 'Latest'
@@ -30,10 +28,9 @@ $InformationPreference = 'Continue'
 Get-Process | Where-Object { $_.Name -like 'java*' } | Stop-Process -Force
 $outputPath = Join-Path -Path $PSScriptRoot -ChildPath '.output'
 $archivePath = Join-Path -Path $outputPath -ChildPath 'youtrack.zip'
-$youtrackVersion = '2024.2.37269'
 if (-not (Test-Path -Path $archivePath))
 {
-    Invoke-WebRequest -Uri "https://download-cdn.jetbrains.com/charisma/youtrack-${youtrackVersion}.zip" -OutFile $archivePath
+    Invoke-WebRequest -Uri "https://download-cdn.jetbrains.com/charisma/youtrack-${YouTrackVersion}.zip" -OutFile $archivePath
 }
 
 $dataArchivePath = Join-Path -Path $PSScriptRoot -ChildPath 'ytconfig.zip'
@@ -45,7 +42,7 @@ if (Test-Path -Path $destinationPath)
 }
 
 Expand-Archive -Path $archivePath -Force -DestinationPath $destinationPath
-$nestedPath = Join-Path -Path $destinationPath -ChildPath "youtrack-${youtrackVersion}"
+$nestedPath = Join-Path -Path $destinationPath -ChildPath "youtrack-${YouTrackVersion}"
 Move-Item -Path (Join-Path -Path $nestedPath -ChildPath '*') -Destination $destinationPath -Force
 Remove-Item -Recurse -Force -Path $nestedPath
 
