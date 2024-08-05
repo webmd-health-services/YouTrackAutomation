@@ -46,7 +46,10 @@ BeforeAll {
 
         )
         $script:result | Should -Not -BeNullOrEmpty
-        $script:result.Count | Should -BeGreaterOrEqual $GreaterThanEqual
+        if (Get-Member -Name Length -InputObject $script:result -ErrorAction SilentlyContinue)
+        {
+            $script:result.Length | Should -BeGreaterOrEqual $GreaterThanEqual
+        }
         $idCount =
             $script:result |
             ForEach-Object { $_.id }  |

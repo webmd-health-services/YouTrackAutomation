@@ -64,7 +64,7 @@ Describe 'New-YTProject' {
     }
 
     It 'should handle leader by id' {
-        WhenCreatingProject -Name 'New-YTProject Test4' -ShortName 'NYTP5' -Leader '2-1'
-        ThenProjectExists
+        WhenCreatingProject -Name 'New-YTProject Test5' -ShortName 'NYTP5' -Leader '2-1'
+        ThenProjectExists -ProjectShortName 'NYTP5'
     }
 }

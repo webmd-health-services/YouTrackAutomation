@@ -62,6 +62,5 @@ Describe 'Get-YTIssue' {
         $additionalFields = 'comments(id,author(name),text,created,updated)'
         WhenGettingIssue -IssueId 'DEMO-1' -AdditionalFields $additionalFields
         ThenIssueHasField -Field 'comments'
-        Write-Output $script:result
     }
 }
