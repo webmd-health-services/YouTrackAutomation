@@ -1,6 +1,6 @@
 # Overview
 
-The "YouTrackAutomation" module...
+The "YouTrackAutomation" module is a PowerShell module built to interface with the YouTrack REST API.
 
 # System Requirements
 
@@ -24,3 +24,17 @@ Import-Module -Name '.\YouTrackAutomation'
 ```
 
 # Commands
+
+## Creating a new session
+
+All commands require a `session` object in order to call them. Create a new session object using the `New-YTSession`
+command.
+
+## Interacting With API
+
+* `Get-YTIssue`
+* `Get-YTProject`
+* `Invoke-YTRestMethod`
+* `New-YTIssue`
+* `New-YTProject`
+* `New-YTSession`

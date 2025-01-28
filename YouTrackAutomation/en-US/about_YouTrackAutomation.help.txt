@@ -2,7 +2,36 @@ TOPIC
     about_YouTrackAutomation
 
 SHORT DESCRIPTION
-    YouTrackAutomation is a PowerShell module for...
+    YouTrackAutomation is a PowerShell module for interacting with the YouTrack REST API.
 
 LONG DESCRIPTION
-    The YouTrackAutomation PowerShell module...
+    The YouTrackAutomation PowerShell module allows for nicely interacting with YouTrack. It provides a `session` object
+    that must be passed into every command that contains the url and the API token that will be used to make calls.
+
+    To create the API token, navigate to `${youtrackUrl}/hub/users` and create a permanent API token for the automation
+    user.
+
+SYSTEM REQUIREMENTS
+    * Windows PowerShell 5.1 and .NET 4.6.1+
+    * PowerShell Core 6+
+
+INSTALLATION
+    To install globall:
+        Install-Module -Name 'YouTrackAutomation'
+        Import-Module -Name 'YouTrackAutomation'
+    
+    To install privately:
+        Save-Module -Name 'YouTrackAutomation' -Path '.'
+        Import-Module -Name '.\YouTrackAutomation'
+
+USING
+    All commands require a `session` object in order to call them. Create a new session object using the `New-YTSession`
+    command.
+
+    Use the following commands to interact with the API:
+        * `Get-YTIssue`
+        * `Get-YTProject`
+        * `Invoke-YTRestMethod`
+        * `New-YTIssue`
+        * `New-YTProject`
+        * `New-YTSession`
