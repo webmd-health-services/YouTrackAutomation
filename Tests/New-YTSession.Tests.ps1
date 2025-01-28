@@ -8,7 +8,7 @@ BeforeAll {
     & (Join-Path -Path $PSScriptRoot -ChildPath 'Initialize-Test.ps1' -Resolve)
 }
 
-Describe 'New-XWSession' {
+Describe 'New-YTSession' {
     It 'should return a session object' {
         $url = 'https://fubar.snafu'
         $apiKey = 'my-api-key'
