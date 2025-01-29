@@ -9,6 +9,7 @@ Build:
     Prerelease:
     - main: ""
     - "*": rc1
+    IncrementPrereleaseVersion: true
 
 # Update the AppVeyor build/version number.
 - Exec:
@@ -72,6 +73,12 @@ Build:
 
 - PublishPowerShellModule:
     Path: YouTrackAutomation
+
+- PowerShell:
+    OnlyBy: BuildServer
+    Path: reset.ps1
+    Argument:
+        OnlyJava: true
 
 - Exec:
     OnlyBy: BuildServer

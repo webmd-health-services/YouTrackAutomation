@@ -18,7 +18,7 @@
     RootModule = 'YouTrackAutomation.psm1'
 
     # Version number of this module.
-    ModuleVersion = '0.0.0'
+    ModuleVersion = '1.0.0'
 
     # ID used to uniquely identify this module
     GUID = '296b12f7-2941-47a4-94cb-9b6575231caa'
@@ -36,7 +36,7 @@
     Copyright = '(c) WebMD Health Services.'
 
     # Description of the functionality provided by this module
-    Description = ''
+    Description = 'A PowerShell module for the YouTrack REST API.'
 
     # Minimum version of the Windows PowerShell engine required by this module
     PowerShellVersion = '5.1'
@@ -76,6 +76,15 @@
 
     # Functions to export from this module. Only list public function here.
     FunctionsToExport = @(
+        'Get-YTIssue',
+        'Get-YTIssueCustomField'
+        'Get-YTProject',
+        'Invoke-YTRestMethod',
+        'New-YTIssue',
+        'New-YTProject',
+        'New-YTSession',
+        'Remove-YTProject',
+        'Resolve-YTProjectId'
     )
 
     # Cmdlets to export from this module. By default, you get a script module, so there are no cmdlets.
