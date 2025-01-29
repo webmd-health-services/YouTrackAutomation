@@ -76,7 +76,9 @@ Build:
 
 - PowerShell:
     OnlyBy: BuildServer
-    ScriptBlock: Get-Process | Where-Object { $_.Name -like 'java*' } | Stop-Process -Force
+    Path: reset.ps1
+    Argument:
+        OnlyJava: true
 
 - Exec:
     OnlyBy: BuildServer

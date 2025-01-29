@@ -15,9 +15,14 @@ Demonstrates how to call this script.
 #>
 [CmdletBinding()]
 param(
+    [Switch] $OnlyJava
 )
 
 Set-StrictMode -Version 'Latest'
 
 Get-Process | Where-Object { $_.Name -like 'java*' } | Stop-Process -Force
-Remove-Item -Recurse -Force -Path (Join-Path -Path $PSScriptRoot -ChildPath '.output\youtrack' -Resolve)
+
+if (-not $OnlyJava)
+{
+    Remove-Item -Recurse -Force -Path (Join-Path -Path $PSScriptRoot -ChildPath '.output\youtrack' -Resolve)
+}
