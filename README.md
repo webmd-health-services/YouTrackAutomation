@@ -27,7 +27,7 @@ Import-Module -Name '.\YouTrackAutomation'
 
 ## Creating a new session
 
-All commands require a `session` object in order to call them. Create a new session object using the `New-YTSession`
+All commands require a session object in order to call them. Create a new session object using the `New-YTSession`
 command.
 
 ## Interacting With API
