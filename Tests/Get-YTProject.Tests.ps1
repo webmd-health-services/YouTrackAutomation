@@ -25,7 +25,8 @@ BeforeAll {
         [CmdletBinding()]
         param(
             [String] $ShortName,
-            [String] $AdditionalField
+            [String] $AdditionalField,
+            [int] $Top
         )
 
         $script:result = Get-YTProject -Session $script:session @PSBoundParameters
@@ -92,5 +93,10 @@ Describe 'Get-YTProject' {
     It 'should support additional fields' {
         WhenGettingProject -ShortName 'GYTP1' -AdditionalField 'description'
         ThenReturns -Count 2 -ProjectWithField 'description'
+    }
+
+    It 'should return the number of items specified' {
+        WhenGettingProject -Top 1
+        ThenReturns -Count 1
     }
 }

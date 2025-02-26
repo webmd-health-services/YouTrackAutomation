@@ -21,6 +21,9 @@ function Get-YTProject
     If the `ShortName` parameter is provided, the function will return only the project with the matching short
     name.
 
+    By default the API endpoint will only return the top 42 projects. The `Top` parameter can be used to set the
+    maximum number of projects that are returned.
+
     .EXAMPLE
     Get-YTProject -Session $session
 
@@ -36,6 +39,11 @@ function Get-YTProject
 
     Demonstrates fetching all projects from YouTrack and including additional fields. This will return the default
     fields along with the description for all projects.
+
+    .EXAMPLE
+    Get-YTProject -Session $session -Top 100
+
+    Demonstrates how to fetch the top 100 projects.
     #>
     [CmdletBinding()]
     param(
@@ -47,7 +55,10 @@ function Get-YTProject
         [String] $ShortName,
 
         # Additional fields to include in the response.
-        [String[]] $AdditionalField
+        [String[]] $AdditionalField,
+
+        # Maximum number of results to return. API end point defaults to top 42.
+        [int] $Top
     )
 
     Set-StrictMode -Version 'Latest'
@@ -61,8 +72,14 @@ function Get-YTProject
     }
 
     $fields = [Uri]::EscapeDataString($fields)
+    $endpoint = "admin/projects?fields=$fields"
 
-    $projects = Invoke-YTRestMethod -Session $Session -Name "admin/projects?fields=$fields"
+    if ($Top)
+    {
+        $endpoint = "${endpoint}&`$top=${Top}"
+    }
+
+    $projects = Invoke-YTRestMethod -Session $Session -Name $endpoint
 
     if ($ShortName)
     {
