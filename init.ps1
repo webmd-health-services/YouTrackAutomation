@@ -50,7 +50,7 @@ $batPath = Join-Path -Path $destinationPath -ChildPath 'bin\youtrack.bat' -Resol
 if (-not $env:OS)
 {
     $batPath = Join-Path -Path $destinationPath -ChildPath 'bin\youtrack.sh' -Resolve
-    $env:JAVA_TOOL_OPTIONS = ''
+    $env:JAVA_TOOL_OPTIONS = $null
 }
 
 & $batPath configure --listen-port=8080 --base-url="http://localhost:8080"
