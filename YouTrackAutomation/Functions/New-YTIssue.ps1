@@ -27,9 +27,9 @@ function New-YTIssue
         [Parameter(Mandatory)]
         [Object] $Session,
 
-        # The project that the issue will be created in. This can be a project object, project short name, or project ID.
+        # The project ID where the issue should be created.
         [Parameter(Mandatory)]
-        [Object] $Project,
+        [String] $ProjectID,
 
         # The summary of the issue.
         [Alias('Title')]
@@ -43,19 +43,19 @@ function New-YTIssue
     Set-StrictMode -Version 'Latest'
     Use-CallerPreference -Cmdlet $PSCmdlet -SessionState $ExecutionContext.SessionState
 
-    $issueFields = @{
-        summary = $Summary;
+    $issue = @{
+        summary = $Summary
         project = @{
-            id = Resolve-YTProjectId -Session $session -Project $Project;
-        };
+            id = $ProjectID
+        }
     }
 
     if ($Description)
     {
-        $issueFields['description'] = $Description
+        $issue['description'] = $Description
     }
 
-    $fields = 'id,idReadable,summary'
+    $fields = Get-YTEntityField -Type 'Issue' -Depth 2
 
-    Invoke-YTRestMethod -Session $Session -Name "issues?fields=$fields" -Body $issueFields -Method Post
+    Invoke-YTRestMethod -Session $Session -Name 'issues' -Property $fields -Body $issue -Method Post
 }

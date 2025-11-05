@@ -33,6 +33,5 @@ function Remove-YTProject
     Set-StrictMode -Version 'Latest'
     Use-CallerPreference -Cmdlet $PSCmdlet -SessionState $ExecutionContext.SessionState
 
-    $projectId = Resolve-YTProjectId -Session $Session -Project $Project
-    Invoke-YTRestMethod -Session $Session -Method Delete -Name "admin/projects/${ProjectId}"
+    Invoke-YTRestMethod -Session $Session -Method Delete -Name "admin/projects/${Project}"
 }

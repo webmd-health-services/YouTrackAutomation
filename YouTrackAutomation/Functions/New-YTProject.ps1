@@ -50,21 +50,22 @@ function New-YTProject
         [String] $Template,
 
         # Additional fields to include in the response.
-        [String[]] $AdditionalField
+        [String[]] $Property
     )
 
     Set-StrictMode -Version 'Latest'
     Use-CallerPreference -Cmdlet $PSCmdlet -SessionState $ExecutionContext.SessionState
 
+    # TODO: require user to pass ID in or do a query to find user with specific name. Some installations of YouTrack
+    # have thousands of users so this will effectively do nothing.
     if ($Leader -notmatch '\d+-\d+')
     {
         $Leader =
-            Invoke-YTRestMethod -Session $Session -Name 'users?fields=name,id' |
-            Where-Object { $_.name -eq $Leader } |
+            Invoke-YTRestMethod -Session $Session -Name 'users' -Property 'name','id' |
+            Where-Object 'name' -eq $Leader |
             Select-Object -ExpandProperty 'id'
     }
 
-    $fields = 'id,name,shortName'
     $body = @{
         name = $Name;
         shortName = $ShortName;
@@ -78,19 +79,21 @@ function New-YTProject
         $body['description'] = $Description
     }
 
-    if ($AdditionalField)
+    if (-not $Property)
     {
-        $fields += ",$($AdditionalField -join ',')"
+        $Property = Get-YTEntityField -Type 'Project'
     }
 
-    $fields = [Uri]::EscapeDataString($fields)
-
+    $queryParams = @{}
     if ($Template)
     {
-        # Template portion needs to be encoded with EscapeUriString as EscapeDataString creates a query string with
-        # invalid syntax
-        $fields += "&template=$([Uri]::EscapeUriString($Template))"
+        $queryParams['template'] = $Template
     }
 
-    Invoke-YTRestMethod -Session $Session -Name "admin/projects?fields=$fields" -Body $body -Method Post
+    Invoke-YTRestMethod -Session $Session `
+                        -Name 'admin/projects' `
+                        -Body $body `
+                        -Property $Property `
+                        -Method Post `
+                        -QueryParameter $queryParams
 }

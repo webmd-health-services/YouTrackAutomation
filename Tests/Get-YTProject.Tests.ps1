@@ -3,14 +3,15 @@ Set-StrictMode -Version 'Latest'
 BeforeAll {
     Set-StrictMode -Version 'Latest'
 
-    Set-StrictMode -Version 'Latest'
-
     Import-Module -Name (Join-Path -Path $PSScriptRoot -ChildPath '..\YouTrackAutomation' -Resolve)
     Import-Module -Name (Join-Path -Path $PSScriptRoot -ChildPath 'YouTrackAutomationTestHelper' -Resolve)
 
     $script:session = Get-YTTSession
 
-    Clear-YTTProject -Wait
+    # Make sure any projects from previous runs are gone.
+    Get-YTProject -Session $script:session |
+        Where-Object 'ShortName' -Like 'GYTP*' |
+        Remove-YTProject -Session $script:session
 
     function GivenProject
     {
@@ -29,12 +30,10 @@ BeforeAll {
     {
         [CmdletBinding()]
         param(
-            [String] $ShortName,
-            [String] $AdditionalField,
-            [int] $Top
+            [hashtable] $WithArgs = @{}
         )
 
-        $script:result = Get-YTProject -Session $script:session @PSBoundParameters
+        $script:result = Get-YTProject -Session $script:session @WithArgs
     }
 
     function ThenReturns
@@ -80,27 +79,40 @@ BeforeAll {
 Describe 'Get-YTProject' {
     BeforeEach {
         $script:result = $null
+        $Global:Error.Clear()
     }
 
     It 'returns one project' {
         GivenProject -ShortName 'GYTP1' -Name 'Get-YTProject Test Project' -Leader 'admin'
-        WhenGettingProject -ShortName 'GYTP1'
+        WhenGettingProject -WithArgs @{ ShortName = 'GYTP1' }
         ThenReturns -Count 1 -ProjectWithShortName 'GYTP1'
     }
 
-    It 'return all projects' {
-        GivenProject -ShortName 'GYTP2' -Name 'Get-YTProject Test Project' -Leader 'admin'
+    It 'returns all projects' {
+        $currentCount = (Get-YTProject -Session $script:session | Measure-Object).Count
+        GivenProject -ShortName 'GYTP2' -Name 'Get-YTProject Test Project 2' -Leader 'admin'
         WhenGettingProject
-        ThenReturns -Count 2 -ProjectWithShortName 'GYTP1', 'GYTP2'
+        ThenReturns -Count ($currentCount + 1) -ProjectWithShortName 'GYTP1', 'GYTP2'
     }
 
-    It 'should support additional fields' {
-        WhenGettingProject -ShortName 'GYTP1' -AdditionalField 'description'
+    It 'supports custom properties' {
+        WhenGettingProject -WithArgs @{ ShortName = 'GYTP1'; Property = 'id','description'; }
         ThenReturns -Count 2 -ProjectWithField 'description'
     }
 
-    It 'should return the number of items specified' {
-        WhenGettingProject -Top 1
+    It 'supports top' {
+        WhenGettingProject -WithArgs @{ Top = 1; }
         ThenReturns -Count 1
+    }
+
+    It 'escapes project' {
+        WhenGettingProject -WithArgs @{ ShortName = '?fields=iconUrl' } -ErrorAction SilentlyContinue
+        $Global:Error | Should -Match 'not found'
+    }
+
+    It 'ignores errors' {
+        WhenGettingProject -WithArgs @{ ShortName = 'fubarsnafufizzbuzz' ; ErrorAction = 'Ignore' }
+        $script:result | Should -BeNullOrEmpty
+        $Global:Error | Should -HaveCount 1 # The original HTTP 500 server exception can't be removed.
     }
 }

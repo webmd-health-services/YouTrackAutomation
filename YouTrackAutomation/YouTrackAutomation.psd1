@@ -18,7 +18,7 @@
     RootModule = 'YouTrackAutomation.psm1'
 
     # Version number of this module.
-    ModuleVersion = '1.1.0'
+    ModuleVersion = '2.0.0'
 
     # ID used to uniquely identify this module
     GUID = '296b12f7-2941-47a4-94cb-9b6575231caa'
@@ -76,15 +76,15 @@
 
     # Functions to export from this module. Only list public function here.
     FunctionsToExport = @(
+        'Get-YTEntityField',
         'Get-YTIssue',
-        'Get-YTIssueCustomField'
+        'Get-YTIssueCustomField',
         'Get-YTProject',
         'Invoke-YTRestMethod',
         'New-YTIssue',
         'New-YTProject',
         'New-YTSession',
-        'Remove-YTProject',
-        'Resolve-YTProjectId'
+        'Remove-YTProject'
     )
 
     # Cmdlets to export from this module. By default, you get a script module, so there are no cmdlets.

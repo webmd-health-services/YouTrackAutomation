@@ -32,6 +32,8 @@ command.
 
 ## Interacting With API
 
+* `Get-YTEntityField`: returns the `fields` query parameter value of a YouTrack entity so that the YouTrack API will
+  return all the entity's fields, with the option of returning property values down to five levels deep.
 * `Get-YTIssue`
 * `Get-YTProject`
 * `Invoke-YTRestMethod`

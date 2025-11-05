@@ -54,8 +54,8 @@ function Get-YTProject
         # The short name of the project to get.
         [String] $ShortName,
 
-        # Additional fields to include in the response.
-        [String[]] $AdditionalField,
+        # List of fields/properties to return on the object.
+        [String[]] $Property,
 
         # Maximum number of results to return. API end point defaults to top 42.
         [int] $Top
@@ -64,27 +64,19 @@ function Get-YTProject
     Set-StrictMode -Version 'Latest'
     Use-CallerPreference -Cmdlet $PSCmdlet -SessionState $ExecutionContext.SessionState
 
-    $fields = 'id,name,shortName'
-
-    if ($AdditionalField)
+    if (-not $Property)
     {
-        $fields += ",$($AdditionalField -join ',')"
+        $Property = Get-YTEntityField -Type 'Project'
     }
 
-    $fields = [Uri]::EscapeDataString($fields)
-    $endpoint = "admin/projects?fields=$fields"
-
-    if ($Top)
-    {
-        $endpoint = "${endpoint}&`$top=${Top}"
-    }
-
-    $projects = Invoke-YTRestMethod -Session $Session -Name $endpoint
-
+    $endpoint = 'admin/projects'
     if ($ShortName)
     {
-        return $projects | Where-Object 'shortName' -EQ $ShortName
+        $endpoint = "${endpoint}/$([URI]::EscapeDataString($ShortName))"
     }
+
+    $projects =
+        Invoke-YTRestMethod -Session $Session -Name $endpoint -Property $Property -Top $Top
 
     return $projects
 }

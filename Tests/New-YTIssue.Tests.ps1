@@ -7,38 +7,27 @@ BeforeAll {
     Import-Module -Name (Join-Path -Path $PSScriptRoot -ChildPath 'YouTrackAutomationTestHelper' -Resolve)
 
     $script:session = Get-YTTSession
+    $script:projectShortName = 'NYTI'
 
-    Clear-YTTProject -Wait
+    $script:project = Get-YTProject -Session $script:session -ShortName $script:projectShortName -ErrorAction Ignore
+    if (-not $script:project)
+    {
+        $script:project = New-YTProject -Session $script:session `
+                                        -Leader 'admin' `
+                                        -Name 'New-YTIssue' `
+                                        -ShortName $script:projectShortName
+    }
 
-    New-YTProject -Session $script:session -Leader 'admin' -Name 'New-YTIssue' -ShortName 'NYTI' -ErrorAction Stop | Out-Null
 
     function WhenCreatingIssue
     {
         param(
-            [String] $WithSummary,
-            [String] $WithDescription,
-            [String] $InProject
+            [hashtable] $WithArgs = @{}
         )
 
-        $splat = @{}
+        $WithArgs['ProjectID'] = $script:project.id
 
-        if ($WithSummary)
-        {
-            $splat['Summary'] = $WithSummary
-        }
-
-        if ($WithDescription)
-        {
-            $splat['Description'] = $WithDescription
-        }
-
-        if ($InProject)
-        {
-            $splat['Project'] = $InProject
-        }
-
-
-        $script:result = New-YTIssue -Session $script:session @splat
+        $script:result = New-YTIssue -Session $script:session @WithArgs
     }
 
     function ThenIssue
@@ -51,32 +40,29 @@ BeforeAll {
         )
 
         $script:result.idReadable | Should -Not -BeNullOrEmpty
-        $issue = Get-YTIssue -Session $script:session -IssueId $script:result.idReadable
-
-        $issue.summary | Should -Be $Summary
-        $issue.project.shortName | Should -Be $Project
-        $issue.description | Should -Be $Description
-        $issue.reporter.name | Should -Be 'admin'
+        $script:result.summary | Should -Be $Summary
+        $script:result.project.id | Should -Be $script:project.id
+        $script:result.description | Should -Be $Description
+        # Make sure two levels of objects are returned
+        $script:result.reporter.login | Should -Be 'admin'
     }
 }
 
 Describe 'New-YTIssue' {
-    BeforeEach {
-        $script:summary = $null
-        $script:description = $null
-        $script:project = $null
-    }
-
     It 'should create a new issue' {
-        WhenCreatingIssue -WithSummary 'First YTAutomation Issue' -WithDescription 'This is the first issue created by the YouTrackAutomation module.' -InProject 'NYTI'
-        ThenIssue -Summary 'First YTAutomation Issue' -Description 'This is the first issue created by the YouTrackAutomation module.' -Project 'NYTI'
+        WhenCreatingIssue -WithArgs @{
+            Summary = 'First YTAutomation Issue'
+            Description = 'This is the first issue created by the YouTrackAutomation module.'
+        }
+        ThenIssue -Summary 'First YTAutomation Issue' `
+                  -Description 'This is the first issue created by the YouTrackAutomation module.'
     }
 
     It 'should allow issues with the same summary and description' {
-        WhenCreatingIssue -WithSummary 'same summary' -WithDescription 'same description' -InProject 'NYTI'
+        WhenCreatingIssue -WithArgs @{ Summary = 'same summary' ; Description = 'same description' }
         ThenIssue -Summary 'same summary' -Description 'same description' -Project 'NYTI'
         $initialIssueId = $script:result.idReadable
-        WhenCreatingIssue -WithSummary 'same summary' -WithDescription 'same description' -InProject 'NYTI'
+        WhenCreatingIssue -WithArgs @{ Summary = 'same summary' ; Description = 'same description' }
         ThenIssue -Summary 'same summary' -Description 'same description' -Project 'NYTI'
         $script:result.idReadable | Should -Not -Be $initialIssueId
     }
