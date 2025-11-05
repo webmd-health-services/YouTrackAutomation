@@ -3,7 +3,10 @@ Set-StrictMode -Version 'Latest'
 BeforeAll {
     Set-StrictMode -Version 'Latest'
 
-    & (Join-Path -Path $PSScriptRoot -ChildPath 'Initialize-Test.ps1' -Resolve)
+    Import-Module -Name (Join-Path -Path $PSScriptRoot -ChildPath '..\YouTrackAutomation' -Resolve)
+    Import-Module -Name (Join-Path -Path $PSScriptRoot -ChildPath 'YouTrackAutomationTestHelper' -Resolve)
+
+    $script:session = Get-YTTSession
 
     function WhenGettingIssue
     {
@@ -40,10 +43,6 @@ BeforeAll {
 }
 
 Describe 'Get-YTIssue' {
-    BeforeEach {
-        $script:session = New-YTSession -Url $apiUrl -ApiToken $apiToken
-    }
-
     It 'should return an issue using the ''jira id''' {
         WhenGettingIssue -IssueId '3-4'
         ThenIssueHasValue -Field 'idReadable' -Value 'DEMO-5'

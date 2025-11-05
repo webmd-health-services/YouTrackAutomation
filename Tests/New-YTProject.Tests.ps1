@@ -4,9 +4,12 @@ Set-StrictMode -Version 'Latest'
 BeforeAll {
     Set-StrictMode -Version 'Latest'
 
-    & (Join-Path -Path $PSScriptRoot -ChildPath 'Initialize-Test.ps1' -Resolve)
+    Import-Module -Name (Join-Path -Path $PSScriptRoot -ChildPath '..\YouTrackAutomation' -Resolve)
+    Import-Module -Name (Join-Path -Path $PSScriptRoot -ChildPath 'YouTrackAutomationTestHelper' -Resolve)
 
-    Clear-Project -Wait
+    $script:session = Get-YTTSession
+
+    Clear-YTTProject -Wait
 
     function WhenCreatingProject
     {
@@ -43,10 +46,6 @@ BeforeAll {
 }
 
 Describe 'New-YTProject' {
-    BeforeEach {
-        $script:session = New-YTSession -Url $apiUrl -ApiToken $apiToken
-    }
-
     It 'should create a new project' {
         WhenCreatingProject -Name 'New-YTProject Test1' -ShortName 'NYTP1' -Leader 'admin'
         ThenProjectExists -ShortName 'NYTP1'

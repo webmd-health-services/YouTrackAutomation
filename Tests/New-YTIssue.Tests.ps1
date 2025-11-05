@@ -2,10 +2,13 @@ Set-StrictMode -Version 'Latest'
 
 BeforeAll {
     Set-StrictMode -Version 'Latest'
-    & (Join-Path -Path $PSScriptRoot -ChildPath 'Initialize-Test.ps1' -Resolve)
 
-    $script:session = New-YTSession -Url $apiUrl -ApiToken $apiToken
-    Clear-Project -Wait
+    Import-Module -Name (Join-Path -Path $PSScriptRoot -ChildPath '..\YouTrackAutomation' -Resolve)
+    Import-Module -Name (Join-Path -Path $PSScriptRoot -ChildPath 'YouTrackAutomationTestHelper' -Resolve)
+
+    $script:session = Get-YTTSession
+
+    Clear-YTTProject -Wait
 
     New-YTProject -Session $script:session -Leader 'admin' -Name 'New-YTIssue' -ShortName 'NYTI' -ErrorAction Stop | Out-Null
 

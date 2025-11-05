@@ -4,7 +4,13 @@ Set-StrictMode -Version 'Latest'
 BeforeAll {
     Set-StrictMode -Version 'Latest'
 
-    & (Join-Path -Path $PSScriptRoot -ChildPath 'Initialize-Test.ps1' -Resolve)
+    Import-Module -Name (Join-Path -Path $PSScriptRoot -ChildPath '..\YouTrackAutomation' -Resolve)
+    Import-Module -Name (Join-Path -Path $PSScriptRoot -ChildPath 'YouTrackAutomationTestHelper' -Resolve)
+
+    $script:session = Get-YTTSession
+
+    Clear-YTTProject -Wait
+
 
     function GivenProject
     {
@@ -40,12 +46,11 @@ BeforeAll {
 
 Describe 'Remove-YTProject' {
     BeforeEach {
-        $script:session = New-YTSession -Url $apiUrl -ApiToken $apiToken
         $script:projectName = ''
     }
 
     AfterEach {
-        Clear-Project -Wait
+        Clear-YTTProject -Wait
     }
 
     It 'should delete project based on short name' {

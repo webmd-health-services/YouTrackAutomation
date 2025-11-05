@@ -48,6 +48,12 @@ $destinationPath = Join-Path -Path $outputPath -ChildPath 'youtrack'
 if ($Force -and (Test-Path -Path $destinationPath))
 {
     Remove-Item -Path $destinationPath -Recurse -Force
+
+    $apiTokenPath = Join-Path -Path $PSScriptRoot -ChildPath 'Tests\.token'
+    if ((Test-Path -Path $apiTokenPath))
+    {
+        Remove-Item -Path $apiTokenPath
+    }
 }
 
 if (-not (Test-Path -Path $destinationPath))
