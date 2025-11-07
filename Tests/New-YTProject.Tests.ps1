@@ -44,7 +44,7 @@ BeforeAll {
             [String] $ShortName
         )
 
-        Get-YTProject -Session $session -ShortName $ShortName | Should -Not -BeNullOrEmpty
+        Get-YTProject -Session $session -Project $ShortName | Should -Not -BeNullOrEmpty
     }
 }
 

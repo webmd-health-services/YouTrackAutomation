@@ -51,8 +51,8 @@ function Get-YTProject
         [Parameter(Mandatory)]
         [Object] $Session,
 
-        # The short name of the project to get.
-        [String] $ShortName,
+        # The ID or short name of the project to get.
+        [String] $Project,
 
         # List of fields/properties to return on the object.
         [String[]] $Property,
@@ -70,9 +70,9 @@ function Get-YTProject
     }
 
     $endpoint = 'admin/projects'
-    if ($ShortName)
+    if ($Project)
     {
-        $endpoint = "${endpoint}/$([URI]::EscapeDataString($ShortName))"
+        $endpoint = "${endpoint}/$([URI]::EscapeDataString($Project))"
     }
 
     $projects =

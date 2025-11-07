@@ -9,7 +9,7 @@ BeforeAll {
     $script:session = Get-YTTSession
     $script:projectShortName = 'NYTI'
 
-    $script:project = Get-YTProject -Session $script:session -ShortName $script:projectShortName -ErrorAction Ignore
+    $script:project = Get-YTProject -Session $script:session -Project $script:projectShortName -ErrorAction Ignore
     if (-not $script:project)
     {
         $script:project = New-YTProject -Session $script:session `

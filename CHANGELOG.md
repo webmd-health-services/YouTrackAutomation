@@ -26,6 +26,8 @@
 * Rename usages of the `New-YTIssue` function's `Project` parameter to `ProjectID`. Update usages to pass in the project
   ID or short name instead of a project object.
 * Remove usages of `Resolve-YTIssueCustomFields` and `Resolve-YTProjectId`.
+* Rename usages of the `Get-YTProject` function's `ShortName` parameter to `Project`. It now accepts either a project
+  short name or a project ID.
 
 ### Added
 
@@ -57,7 +59,8 @@
   changed the behavior to only return the fields passed in.
 * `New-YTIssue` returns all object properties on the new issue, two levels deep.
 * `New-YTProject` returns all object properteis on the new project.
-
+* Renamed the `Get-YTProject` function's `ShortName` parameter to `Project`. It now accepts either a project short name
+  or project ID.
 
 ## 1.1.0
 

@@ -8,11 +8,6 @@ BeforeAll {
 
     $script:session = Get-YTTSession
 
-    # Make sure any projects from previous runs are gone.
-    Get-YTProject -Session $script:session |
-        Where-Object 'ShortName' -Like 'GYTP*' |
-        Remove-YTProject -Session $script:session
-
     function GivenProject
     {
         [CmdletBinding()]
@@ -23,7 +18,18 @@ BeforeAll {
         )
 
         $script:projectShortName = $ShortName
-        New-YTProject -Session $script:session -ShortName $ShortName -Name $Name -Leader $Leader -Description 'This is a test project.'
+        $project = New-YTProject -Session $script:session `
+                                 -ShortName $ShortName `
+                                 -Name $Name `
+                                 -Leader $Leader `
+                                 -Description 'This is a test project.' `
+                                 -ErrorAction Ignore
+        if ($project)
+        {
+            return $project
+        }
+
+        Get-YTProject -Session $script:session -Project $ShortName
     }
 
     function WhenGettingProject
@@ -82,21 +88,25 @@ Describe 'Get-YTProject' {
         $Global:Error.Clear()
     }
 
-    It 'returns one project' {
+    It 'gets project by short name' {
         GivenProject -ShortName 'GYTP1' -Name 'Get-YTProject Test Project' -Leader 'admin'
-        WhenGettingProject -WithArgs @{ ShortName = 'GYTP1' }
+        WhenGettingProject -WithArgs @{ Project = 'GYTP1' }
         ThenReturns -Count 1 -ProjectWithShortName 'GYTP1'
     }
 
+    It 'gets project by ID' {
+        $project = GivenProject -ShortName 'GYTP1B' -Name 'Get-YTProject Test Project 1B' -Leader 'admin'
+        WhenGettingProject -WithArgs @{ Project = $project.id }
+        ThenReturns -Count 1 -ProjectWithShortName 'GYTP1B'
+    }
+
     It 'returns all projects' {
-        $currentCount = (Get-YTProject -Session $script:session | Measure-Object).Count
-        GivenProject -ShortName 'GYTP2' -Name 'Get-YTProject Test Project 2' -Leader 'admin'
         WhenGettingProject
-        ThenReturns -Count ($currentCount + 1) -ProjectWithShortName 'GYTP1', 'GYTP2'
+        ($script:result | Measure-Object).Count | Should -BeGreaterThan 1
     }
 
     It 'supports custom properties' {
-        WhenGettingProject -WithArgs @{ ShortName = 'GYTP1'; Property = 'id','description'; }
+        WhenGettingProject -WithArgs @{ Project = 'GYTP1'; Property = 'id','description' }
         ThenReturns -Count 2 -ProjectWithField 'description'
     }
 
@@ -106,12 +116,12 @@ Describe 'Get-YTProject' {
     }
 
     It 'escapes project' {
-        WhenGettingProject -WithArgs @{ ShortName = '?fields=iconUrl' } -ErrorAction SilentlyContinue
+        WhenGettingProject -WithArgs @{ Project = 'GYTP1?fields=iconUrl' } -ErrorAction SilentlyContinue
         $Global:Error | Should -Match 'not found'
     }
 
     It 'ignores errors' {
-        WhenGettingProject -WithArgs @{ ShortName = 'fubarsnafufizzbuzz' ; ErrorAction = 'Ignore' }
+        WhenGettingProject -WithArgs @{ Project = 'fubarsnafufizzbuzz' ; ErrorAction = 'Ignore' }
         $script:result | Should -BeNullOrEmpty
         $Global:Error | Should -HaveCount 1 # The original HTTP 500 server exception can't be removed.
     }

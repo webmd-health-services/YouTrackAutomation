@@ -9,7 +9,7 @@ BeforeAll {
     Import-Module -Name (Join-Path -Path $PSScriptRoot -ChildPath 'YouTrackAutomationTestHelper' -Resolve)
 
     $script:session = Get-YTTSession
-    $script:project = Get-YTProject -Session $script:session -ShortName 'IYTC' -ErrorAction Ignore
+    $script:project = Get-YTProject -Session $script:session -Project 'IYTC' -ErrorAction Ignore
     if (-not $script:project)
     {
         $script:project =

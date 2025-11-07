@@ -24,7 +24,7 @@ Describe 'Invoke-YTRestMethod' {
     }
 
     It 'supports WhatIf' {
-        $project = Get-YTProject -Session $script:session -ShortName 'DEMO'
+        $project = Get-YTProject -Session $script:session -Project 'DEMO'
         $desc = 'This is a test ticket.'
         $issue = New-YTIssue -Session $script:session -ProjectID $project.id -Summary 'Test Ticket' -Description $desc
 

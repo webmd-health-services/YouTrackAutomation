@@ -45,7 +45,7 @@ Describe 'Get-YTEntityField' {
     It 'gets no more than five layers deep' {
         $properties = Get-YTEntityField -Type 'Project' -Depth 5
         $properties | Should -Not -BeNullOrEmpty
-        $project = Get-YTProject -Session $script:yttSession -ShortName 'DEMO' -Property $properties
+        $project = Get-YTProject -Session $script:yttSession -Project 'DEMO' -Property $properties
         $project | Should -Not -BeNullOrEmpty
         $project.customFields.project.customFields.project | Should -Not -BeNullOrEmpty
         $deepestObject = $project.customFields[0].project.customFields[0].project
