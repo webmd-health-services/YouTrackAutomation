@@ -6,8 +6,8 @@ function Remove-YTProject
     Removes a YouTrack project.
 
     .DESCRIPTiON
-    The `Remove-YTProject` function deletes an entire project in YouTrack. Pass the project object, the id of the
-    object, or the short name of the project to the `Project` parameter.
+    The `Remove-YTProject` function deletes an entire project in YouTrack. Pass the project ID or short name to the
+    `Project` parameter. You can also pipe the short name, the id, or a project object to `Remove-YTProject`.
 
     .EXAMPLE
     Remove-YTProject -Session $session -Project 'DEMO'
@@ -18,20 +18,32 @@ function Remove-YTProject
     Remove-YTProject -Session $session -Project '0-1'
 
     Demonstrates removing the project with the '0-1' id.
+
+    .EXAMPLE
+    Get-YTProject -Session $session -Project 'MYPROJ' | Remove-YTProject -Session $session
+
+    Demonstrates that you can pipe project objects to `Remove-YTProject`.
     #>
     [CmdletBinding(SupportsShouldProcess)]
+    [Diagnostics.CodeAnalysis.SuppressMessage('PSShouldProcess', '')]
     param(
         # The session object for a YouTrack session. Create a new Session using `New-YTSession`.
         [Parameter(Mandatory)]
         [Object] $Session,
 
-        # The project to be deleted. This can be a project object, project short name, or project ID.
-        [Parameter(Mandatory)]
-        [Object] $Project
+        # The ID or short name of the project to deleted.
+        [Parameter(Mandatory, ValueFromPipeline, ValueFromPipelineByPropertyName)]
+        [Alias('id')]
+        [Alias('shortName')]
+        [String] $Project
     )
 
-    Set-StrictMode -Version 'Latest'
-    Use-CallerPreference -Cmdlet $PSCmdlet -SessionState $ExecutionContext.SessionState
+    process
+    {
+        Set-StrictMode -Version 'Latest'
+        Use-CallerPreference -Cmdlet $PSCmdlet -SessionState $ExecutionContext.SessionState
 
-    Invoke-YTRestMethod -Session $Session -Method Delete -Name "admin/projects/${Project}"
+        $safeProject = [URI]::EscapeDataString($Project)
+        Invoke-YTRestMethod -Session $Session -Method Delete -Name "admin/projects/${safeProject}"
+    }
 }
