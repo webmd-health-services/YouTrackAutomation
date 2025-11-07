@@ -80,6 +80,7 @@
         'Get-YTIssue',
         'Get-YTIssueCustomField',
         'Get-YTProject',
+        'Invoke-YTCommand',
         'Invoke-YTRestMethod',
         'New-YTIssue',
         'New-YTProject',

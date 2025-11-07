@@ -42,6 +42,7 @@
 * `Top` parameter, to control how many results are returned by the API.
 * Added verbose messages to `Invoke-YTRestMethod` that show the request being made to the API.
 * `Remove-YTProject`: accept project objects, project IDs, or project short names from the pipeline.
+* Function `Invoke-YTCommand` for working with the `commands` endpoint.
 
 ### Changed
 
