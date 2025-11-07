@@ -18,9 +18,18 @@ BeforeAll {
                                         -ShortName $script:projectShortName
     }
 
+    function GivenIssue
+    {
+        param(
+            [String] $Summary
+        )
+
+        New-YTIssue -Session $script:session -Summary $Summary -ProjectID $script:project.id
+    }
 
     function WhenCreatingIssue
     {
+        [CmdletBinding()]
         param(
             [hashtable] $WithArgs = @{}
         )
@@ -36,19 +45,42 @@ BeforeAll {
         param(
             [String] $Summary,
             [String] $Description,
-            [String] $Project
+            [String] $Project,
+            [String] $HasParent
         )
 
         $script:result.idReadable | Should -Not -BeNullOrEmpty
-        $script:result.summary | Should -Be $Summary
+
+        if ($Summary)
+        {
+            $script:result.summary | Should -Be $Summary
+        }
+
         $script:result.project.id | Should -Be $script:project.id
-        $script:result.description | Should -Be $Description
+
+        if ($Description)
+        {
+            $script:result.description | Should -Be $Description
+        }
+
+        if ($HasParent)
+        {
+            $script:result.parent | Should -Not -BeNullOrEmpty
+            $script:result.parent.issues | Should -Not -BeNullOrEmpty
+            $script:result.parent.issues.id | Should -Be $HasParent
+        }
+
         # Make sure two levels of objects are returned
+        $script:result.reporter | Get-Member 'login' | Should -Not -BeNullOrEmpty
         $script:result.reporter.login | Should -Be 'admin'
     }
 }
 
 Describe 'New-YTIssue' {
+    BeforeEach {
+        $Global:Error.Clear()
+    }
+
     It 'should create a new issue' {
         WhenCreatingIssue -WithArgs @{
             Summary = 'First YTAutomation Issue'
@@ -65,5 +97,18 @@ Describe 'New-YTIssue' {
         WhenCreatingIssue -WithArgs @{ Summary = 'same summary' ; Description = 'same description' }
         ThenIssue -Summary 'same summary' -Description 'same description' -Project 'NYTI'
         $script:result.idReadable | Should -Not -Be $initialIssueId
+    }
+
+    It 'assigns new issue to parent' {
+        $parent = GivenIssue 'Parent Issue'
+        $parent | Should -Not -BeNullOrEmpty
+        WhenCreatingIssue -WithArgs @{ Summary = 'Child Issue' ; Parent = $parent.id }
+        ThenIssue -HasParent $parent.id
+    }
+
+    It 'validates parent issue id' {
+        WhenCreatingIssue -WithArgs @{ Summary = 'Missing Parent'; Parent = 'fubarsnafu' } -ErrorAction SilentlyContinue
+        $script:result | Should -BeNullOrEmpty
+        $Global:Error | Should -Match 'not found|does not exist'
     }
 }

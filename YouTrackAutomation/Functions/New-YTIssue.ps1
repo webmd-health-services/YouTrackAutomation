@@ -37,11 +37,26 @@ function New-YTIssue
         [String] $Summary,
 
         # The description of the issue.
-        [String] $Description
+        [String] $Description,
+
+        # Readable issue ID for the parent issue.
+        [String] $Parent
     )
 
     Set-StrictMode -Version 'Latest'
     Use-CallerPreference -Cmdlet $PSCmdlet -SessionState $ExecutionContext.SessionState
+
+    $parentIssue = $null
+    if ($Parent)
+    {
+        $parentIssue = Get-YTIssue -Session $Session -Issue $Parent -Property 'idReadable'
+        if (-not $parentIssue)
+        {
+            $msg = "Failed to create issue ""${Summary}"" because parent issue ""${Parent}"" does not exist."
+            Write-Error -Message $msg -ErrorAction $ErrorActionPreference
+            return
+        }
+    }
 
     $issue = @{
         summary = $Summary
@@ -55,7 +70,20 @@ function New-YTIssue
         $issue['description'] = $Description
     }
 
-    $fields = Get-YTEntityField -Type 'Issue' -Depth 2
+    $fields = Get-YTEntityField -Type 'Issue' -Depth $script:defaultIssueFieldDepth
 
-    Invoke-YTRestMethod -Session $Session -Name 'issues' -Property $fields -Body $issue -Method Post
+    $issue = Invoke-YTRestMethod -Session $Session -Name 'issues' -Property $fields -Body $issue -Method Post
+
+    if (-not $Parent)
+    {
+        return $issue
+    }
+
+    $query = "subtask of: $($parentIssue.idReadable)"
+    $issue | Invoke-YTCommand -Session $Session -Query $query | ConvertTo-Json -Depth 50 | Write-Verbose
+
+    # Make sure to return an object that has the new relationship.
+    $fields = Get-YTEntityField -Type 'Issue' -Depth $script:defaultIssueFieldDepth
+    $fields = "$($fields -join ','),parent($((Get-YTEntityField -Type 'IssueLink' -Depth 2) -join ','))"
+    Get-YTIssue -Session $Session -Issue $issue.idReadable -Property $fields
 }

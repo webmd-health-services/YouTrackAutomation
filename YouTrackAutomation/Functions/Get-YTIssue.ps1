@@ -45,7 +45,7 @@ function Get-YTIssue
 
     if (-not $Property)
     {
-        $Property = Get-YTEntityField -Type 'Issue' -Depth 2
+        $Property = Get-YTEntityField -Type 'Issue' -Depth $script:defaultIssueFieldDepth
     }
 
     $endpoint = 'issues'

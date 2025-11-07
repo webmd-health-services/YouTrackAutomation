@@ -43,6 +43,8 @@
 * Added verbose messages to `Invoke-YTRestMethod` that show the request being made to the API.
 * `Remove-YTProject`: accept project objects, project IDs, or project short names from the pipeline.
 * Function `Invoke-YTCommand` for working with the `commands` endpoint.
+* `New-YTIssue` can now also link new issues as subtasks of a parent issue. Pass the parent issue ID or readable ID to
+  the new `Parent` parameter.
 
 ### Changed
 
