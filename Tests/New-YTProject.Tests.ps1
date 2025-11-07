@@ -9,7 +9,10 @@ BeforeAll {
 
     $script:session = Get-YTTSession
 
-    Clear-YTTProject -Wait
+    # Make sure any projects from previous runs are gone.
+    Get-YTProject -Session $script:session |
+        Where-Object 'ShortName' -Like 'NYTP*' |
+        Remove-YTProject -Session $script:session
 
     function WhenCreatingProject
     {
