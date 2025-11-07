@@ -184,10 +184,26 @@ function Invoke-YTRestMethod
         $queryString = "?$($queryString -join '&')"
     }
 
-    [Uri]$url = [Uri]::New($Session.Url, "api/${name}${queryString}")
+    $baseUrl = $Session.Url.ToString()
+    if (-not $baseUrl.EndsWith('/'))
+    {
+        $baseUrl = "${baseUrl}/"
+    }
+
+    [Uri]$url = [Uri]"${baseUrl}api/${name}${queryString}"
+
+    $auth = "Bearer $($Session.ApiToken)"
+    if ($Session.Credential)
+    {
+        $credential = $Session.Credential
+        $basicCred = "$($credential.UserName):$($credential.GetNetworkCredential().Password)"
+        $basicCredBytes = [Text.Encoding]::UTF8.GetBytes($basicCred)
+        $basicCredBase64 = [Convert]::ToBase64String($basicCredBytes)
+        $auth = "Basic ${basicCredBase64}"
+    }
 
     $headers = @{
-        'Authorization' = "Bearer $($Session.ApiToken)"
+        'Authorization' = $auth;
         'Accept' = 'application/json'
     }
 

@@ -92,4 +92,13 @@ Describe 'Invoke-YTRestMethod' {
         $issues | Get-Member 'summary' | Should -BeNullOrEmpty
     }
 
+    It 'authenticates with credential' {
+        $password = ConvertTo-SecureString 'admin' -Force -AsPlainText
+        $admin = [pscredential]::New('admin', $password)
+        $session = New-YTSession -Url $script:session.Url -Credential $admin
+        $session | Should -Not -BeNullOrEmpty
+        $me = Invoke-YTRestMethod -Session $session -Name 'users/me' -Property (Get-YTEntityField -Type 'User')
+        $me | Should -Not -BeNullOrEmpty
+        $me.fullName | Should -Be $admin.UserName
+    }
 }

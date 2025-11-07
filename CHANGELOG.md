@@ -47,6 +47,9 @@
 * Function `Invoke-YTCommand` for working with the `commands` endpoint.
 * `New-YTIssue` can now also link new issues as subtasks of a parent issue. Pass the parent issue ID or readable ID to
   the new `Parent` parameter.
+* `Remove-YTProject`: accept project objects, project IDs, or project short names from the pipeline.
+* Connect using a credential (username/password) in addition to an API key. Pass the credential instead of the API key
+  to the `New-YTSession` function.
 
 ### Changed
 
@@ -61,6 +64,9 @@
 * `New-YTProject` returns all object properteis on the new project.
 * Renamed the `Get-YTProject` function's `ShortName` parameter to `Project`. It now accepts either a project short name
   or project ID.
+* `New-YTSession` writes an error if the URL to YouTrack includes a path. There are multiple YouTrack REST APIs with
+  different paths. In order not to require a different session for each API, the path is no longer allowed and
+  YouTrackAutomation manages the path to the correct API.
 
 ## 1.1.0
 
