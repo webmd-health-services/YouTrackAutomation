@@ -50,6 +50,10 @@
 * `Remove-YTProject`: accept project objects, project IDs, or project short names from the pipeline.
 * Connect using a credential (username/password) in addition to an API key. Pass the credential instead of the API key
   to the `New-YTSession` function.
+* `Get-YTIssue` parameters that search for issues:
+  * `Project` searches for issues in a specific project.
+  * `Summary` searches for issues whose summary matches a search string.
+  * `SubtaskOf` searches for issues that are subtasks of a parent issue.
 
 ### Changed
 

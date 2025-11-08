@@ -8,6 +8,42 @@ BeforeAll {
 
     $script:session = Get-YTTSession
 
+    $shortName = 'GYTI'
+    $script:project = Get-YTProject -Session $script:session -Project 'GYTI' -ErrorAction Ignore
+    if (-not $script:project)
+    {
+        $script:project = New-YTProject -Session $script:session `
+                                        -Name 'Get-YTIssue' `
+                                        -ShortName $shortName `
+                                        -Leader 'admin' `
+                                        -Description 'Project for Get-YTIssue tests.'
+    }
+
+    function GivenIssue
+    {
+        param(
+            [Parameter(Mandatory, Position=0)]
+            [String] $WithSummary,
+
+            [String] $WithDescription,
+
+            [String] $SubtaskOf
+        )
+
+        $newArgs = @{}
+        if ($WithDescription)
+        {
+            $newArgs['Description'] = $WithDescription
+        }
+
+        if ($SubtaskOf)
+        {
+            $newArgs['Parent'] = $SubtaskOf
+        }
+
+        New-YTIssue -Session $script:session -ProjectID $script:project.id -Summary $WithSummary @newArgs
+    }
+
     function WhenGettingIssue
     {
         [CmdletBinding()]
@@ -74,5 +110,49 @@ Describe 'Get-YTIssue' {
         WhenGettingIssue -WithArgs @{ Issue = '?fields=id' } -ErrorAction SilentlyContinue
         $script:result | Should -BeNullOrEmpty
         $Global:Error | Should -Match 'not found'
+    }
+
+    It 'gets all issues in a project' {
+        # Make sure there are issues in other projects.
+        $issue = New-YTIssue -Session $script:session -ProjectID $script:project.id -Summary 'At Least One'
+        $allIssues = Get-YTIssue -Session $script:session
+        $projIssues = Get-YTIssue -Session $script:session -Project 'DEMO'
+        $projIssues.Count | Should -BeLessThan $allIssues.Count
+        $projIssues | Where-Object 'id' -EQ $issue.id | Should -BeNullOrEmpty
+    }
+
+    It 'finds issue by summary' {
+        $expectedIssue = GivenIssue ([Guid]::NewGuid())
+
+        # It can take a few seconds for issue to be indexed, so retry for 10.
+        $actualIssue = $null
+        $timer = [Diagnostics.Stopwatch]::StartNew()
+        do
+        {
+            $actualIssue = Get-YTIssue -Session $script:session -Summary $expectedIssue.summary
+            if ($actualIssue)
+            {
+                break
+            }
+
+            Start-Sleep -Seconds 1
+        }
+        while ($timer.Elapsed.TotalSeconds -lt 10)
+
+        $actualIssue | Should -Not -BeNullOrEmpty
+        $actualIssue.id | Should -Be $expectedIssue.id
+    }
+
+    It 'finds subtasks' {
+        $parent = GivenIssue "Parent 7"
+        $subtask1 = GivenIssue "Subtask 1 of $($parent.idReadable)" -SubtaskOf $parent.id
+        $subtask2 = GivenIssue "Subtask 2 of $($parent.idReadable)" -SubtaskOf $parent.id
+        $issue = GivenIssue 'Issue 3'
+
+        $issues = Get-YTIssue -Session $script:session -SubtaskOf $parent.idReadable
+        $issues | Should -HaveCount 2
+        $issues | Where-Object 'id' -EQ $subtask1.id | Should -Not -BeNullOrEmpty
+        $issues | Where-Object 'id' -EQ $subtask2.id | Should -Not -BeNullOrEmpty
+        $issues | Where-Object 'id' -EQ $issue.id | Should -BeNullOrEmpty
     }
 }
