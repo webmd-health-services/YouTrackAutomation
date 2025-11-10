@@ -11,14 +11,23 @@ function Get-YTEntityField
     function with that parameter. The list is sent as the value of the `fields` query string parameter when making a
     request to the YouTrack REST API.
 
+    By default, properties of nested objects are not returned, i.e. the depth of the values returned is restricted to
+    the entity itself. To return nested object values, pass the depth you'd like to the `Depth` parameter.
+
     Pass the entity's type name to the `Type` parameter. That entity's fields will be returned. Only the following
     entities are currently supported:
 
+    * BuildBundle
+    * BuildBundleElement
+    * Bundle
     * CustomField
     * CustomFieldCondition
     * CustomFieldDefaults
     * DateFormatDescriptor
     * DuplicateVote
+    * EnumBundle
+    * EnumBundleElement
+    * Event
     * ExternalIssue
     * FieldStyle
     * FieldType
@@ -34,11 +43,15 @@ function Get-YTEntityField
     * IssueWatchers
     * LocaleDescriptor
     * NotificationsUserProfile
+    * OwnedBundle
+    * OwnedBundleElement
     * PeriodFieldFormat
     * Project
     * ProjectCustomField
     * ProjectTeam
     * Reaction
+    * StateBundle
+    * StateBundleElement
     * Tag
     * TagSharingSettings
     * TimeTrackingUserProfile
@@ -46,12 +59,10 @@ function Get-YTEntityField
     * User
     * UserGroup
     * UserProfiles
+    * VersionBundle
+    * VersionBundleElement
     * Visibility
     * WatchFolderSharingSettings
-
-    By default, properties of nested objects are not returned, i.e. the depth of the values returned is restricted to
-    the entity itself. To return nested object values, pass the depth you'd like to the `Depth` parameter. In order to
-    prevent overloading YouTrack with the amount of data returned, you can at most return 5 levels of objects.
 
     .EXAMPLE
     Get-YTEntityField -Type Project
@@ -68,13 +79,53 @@ function Get-YTEntityField
     [CmdletBinding()]
     param(
         [Parameter(Mandatory)]
-        [ValidateSet('CustomField', 'CustomFieldCondition', 'CustomFieldDefaults', 'DateFormatDescriptor',
-            'DuplicateVote', 'ExternalIssue', 'FieldStyle', 'FieldType', 'GeneralUserProfile', 'Issue',
-            'IssueAttachment', 'IssueComment', 'IssueCustomField', 'IssueLink', 'IssueLinkType', 'IssueVoters',
-            'IssueWatcher', 'IssueWatchers', 'LocaleDescriptor', 'NotificationsUserProfile', 'PeriodFieldFormat',
-            'Project', 'ProjectCustomField', 'ProjectTeam', 'Reaction', 'Tag', 'TagSharingSettings',
-            'TimeTrackingUserProfile', 'TimeZoneDescriptor', 'User', 'UserGroup', 'UserProfiles', 'Visibility',
-            'WatchFolderSharingSettings', 'YTAIssueCustomFieldValue')]
+        [ValidateSet(
+            'BuildBundle',
+            'BuildBundleElement',
+            'Bundle',
+            'CustomField',
+            'CustomFieldCondition',
+            'CustomFieldDefaults',
+            'DateFormatDescriptor',
+            'DuplicateVote',
+            'EnumBundle',
+            'EnumBundleElement',
+            'Event',
+            'ExternalIssue',
+            'FieldStyle',
+            'FieldType',
+            'GeneralUserProfile',
+            'Issue',
+            'IssueAttachment',
+            'IssueComment',
+            'IssueCustomField',
+            'IssueLink',
+            'IssueLinkType',
+            'IssueVoters',
+            'IssueWatcher',
+            'IssueWatchers',
+            'LocaleDescriptor',
+            'NotificationsUserProfile',
+            'OwnedBundle',
+            'OwnedBundleElement',
+            'PeriodFieldFormat',
+            'Project',
+            'ProjectCustomField',
+            'ProjectTeam',
+            'Reaction',
+            'StateBundle',
+            'StateBundleElement',
+            'Tag',
+            'TagSharingSettings',
+            'TimeTrackingUserProfile',
+            'TimeZoneDescriptor',
+            'User',
+            'UserGroup',
+            'UserProfiles',
+            'VersionBundle',
+            'VersionBundleElement',
+            'Visibility',
+            'WatchFolderSharingSettings')]
         [String] $Type,
 
         # By default, only returns a field list for the entity's attributes. To retrieve more objects, pass the number

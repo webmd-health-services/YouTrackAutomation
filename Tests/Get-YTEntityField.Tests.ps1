@@ -13,7 +13,8 @@ BeforeAll {
     Import-Module -Name (Join-Path -Path $PSScriptRoot -ChildPath '..\YouTrackAutomation' -Resolve)
     Import-Module -Name (Join-Path -Path $PSScriptRoot -ChildPath 'YouTrackAutomationTestHelper' -Resolve)
 
-    $script:yttSession = Get-YTTSession
+    $script:session = Get-YTTSession
+    $script:project = Initialize-YTTProject
 }
 
 Describe 'Get-YTEntityField' {
@@ -29,7 +30,8 @@ Describe 'Get-YTEntityField' {
     }
 
     It 'gets <_> fields up to maximum depth' -ForEach $knownEntities {
-        Get-YTEntityField -Type $_ -Depth 5 | Should -Not -BeNullOrEmpty
+        Get-YTEntityField -Type $_ -Depth 5 -WarningVariable 'warnings' | Should -Not -BeNullOrEmpty
+        $warnings | Should -BeNullOrEmpty
     }
 
     It 'gets properties for nested objects' {
@@ -43,9 +45,11 @@ Describe 'Get-YTEntityField' {
     }
 
     It 'gets no more than five layers deep' {
+        # We're requesting *a lot* of data, so make sure there is a minimal amount of data to actually return.
+        New-YTIssue -Session $script:session  -ProjectID $script:project.id -Summary 'Just Need One'
         $properties = Get-YTEntityField -Type 'Project' -Depth 5
         $properties | Should -Not -BeNullOrEmpty
-        $project = Get-YTProject -Session $script:yttSession -Project 'DEMO' -Property $properties
+        $project = Get-YTProject -Session $script:session -Project $script:project.id -Property $properties
         $project | Should -Not -BeNullOrEmpty
         $project.customFields.project.customFields.project | Should -Not -BeNullOrEmpty
         $deepestObject = $project.customFields[0].project.customFields[0].project

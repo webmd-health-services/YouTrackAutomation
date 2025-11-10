@@ -26,6 +26,28 @@ $script:defaultIssueFieldDepth = 2
 # to be returned by functions in the module.Use by Get-YTEntityField to construct field query param values. If
 # you add a new entity, update the Get-YTEntityField tests.
 $script:entityAttributes = @{
+    BuildBundle = @(
+        'id',
+        @{ Name = 'values' ; Type = 'BuildBundleElement' },
+        'isUpdateable'
+    )
+    BuildBundleElement = @(
+        'id',
+        'assembleDate',
+        'name',
+        @{ Name = 'bundle' ; Type = 'BuildBundle' },
+        'description',
+        'archived',
+        'ordininal',
+        @{ Name = 'color' ; Type = 'FieldStyle' },
+        'hasRunningJob'
+    )
+    Bundle = @(
+        'id',
+        # Bundle type not known ahead of time, so get all properties common to all bundle types.
+        'values(id,name,description,archived,ordinal,color(id,background,foreground),hasRunningJob)',
+        'isUpdateable'
+    )
     CustomField = @(
         'id',
         'name',
@@ -57,6 +79,22 @@ $script:entityAttributes = @{
         @{ Name = 'issue' ; Type = 'Issue' },
         @{ Name = 'user' ; Type = 'User' }
     );
+    EnumBundle = @(
+        'id',
+        @{ Name = 'values' ; Type = 'EnumBundleElement' },
+        'isUpdateable'
+    )
+    EnumBundleElement = @(
+        'id',
+        'localizedName',
+        'name',
+        @{ Name = 'bundle' ; Type = 'EnumBundle' },
+        'description',
+        'archived',
+        'ordinal',
+        @{ Name = 'color'; Type = 'FieldStyle' },
+        'hasRunningJob'
+    )
     ExternalIssue = @( 'id', 'name', 'url', 'key');
     FieldType = @( 'id' );
     FieldStyle = @( 'id', 'background', 'foreground' );
@@ -186,6 +224,22 @@ $script:entityAttributes = @{
         'autoWatchOnVote',
         'autoWatchOnUpdate'
     );
+    OwnedBundle = @(
+        'id',
+        @{ Name = 'values' ; Type = 'OwnedBundleElement' },
+        'isUpdateable'
+    )
+    OwnedBundleElement = @(
+        'id',
+        @{ Name = 'owner' ; Type = 'User' },
+        'name',
+        @{ Name = 'bundle' ; Type = 'OwnedBundle' },
+        'description',
+        'archived',
+        'ordinal',
+        @{ Name = 'color'; Type = 'FieldStyle' },
+        'hasRunningJob'
+    )
     PeriodFieldFormat = @( 'id' );
     Project = @(
         'id',
@@ -228,6 +282,23 @@ $script:entityAttributes = @{
         @{ Name = 'author' ; Type = 'User' },
         'reaction'
     );
+    StateBundle = @(
+        'id',
+        @{ Name = 'values' ; Type = 'StateBundleElement' },
+        'isUpdateable'
+    )
+    StateBundleElement = @(
+        'id',
+        'isResolved',
+        'localizedName',
+        'name',
+        @{ Name = 'bundle' ; Type = 'StateBundle' },
+        'description',
+        'archived',
+        'ordinal',
+        @{ Name = 'color'; Type = 'FieldStyle' },
+        'hasRunningJob'
+    )
     Tag = @(
         'id',
         @{ Name = 'issues' ; Type = 'Issue' },
@@ -279,6 +350,24 @@ $script:entityAttributes = @{
         @{ Name = 'notifications' ; Type = 'NotificationsUserProfile' },
         @{ Name = 'timeTracking' ; Type = 'TimeTrackingUserProfile' }
     );
+    VersionBundle = @(
+        'id',
+        @{ Name = 'values' ; Type = 'VersionBundleElement' },
+        'isUpdateable'
+    )
+    VersionBundleElement = @(
+        'id',
+        'released',
+        'releaseDate',
+        'startDate',
+        'name',
+        @{ Name = 'bundle' ; Type = 'VersionBundle' },
+        'description',
+        'archived',
+        'ordinal',
+        @{ Name = 'color'; Type = 'FieldStyle' },
+        'hasRunningJob'
+    )
     Visibility = @(
         'id',
         @{ Name = 'permittedGroups' ; Type = 'UserGroup' },

@@ -55,6 +55,7 @@
   * `Summary` searches for issues whose summary matches a search string.
   * `SubtaskOf` searches for issues that are subtasks of a parent issue.
 * Function `Protect-YTPath` for creating a URL-safe paths to a YouTrack API resource using values that come from users.
+* Function `Get-YTBundle` for getting a YouTrack bundle.
 
 ### Changed
 

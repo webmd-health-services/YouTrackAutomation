@@ -76,6 +76,7 @@
 
     # Functions to export from this module. Only list public function here.
     FunctionsToExport = @(
+        'Get-YTBundle',
         'Get-YTEntityField',
         'Get-YTIssue',
         'Get-YTIssueCustomField',
