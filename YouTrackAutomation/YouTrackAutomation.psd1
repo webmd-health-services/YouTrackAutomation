@@ -82,6 +82,7 @@
         'Get-YTProject',
         'Invoke-YTCommand',
         'Invoke-YTRestMethod',
+        'Protect-YTPath',
         'New-YTIssue',
         'New-YTProject',
         'New-YTSession',

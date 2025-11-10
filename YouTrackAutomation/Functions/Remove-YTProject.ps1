@@ -43,7 +43,7 @@ function Remove-YTProject
         Set-StrictMode -Version 'Latest'
         Use-CallerPreference -Cmdlet $PSCmdlet -SessionState $ExecutionContext.SessionState
 
-        $safeProject = [URI]::EscapeDataString($Project)
-        Invoke-YTRestMethod -Session $Session -Method Delete -Name "admin/projects/${safeProject}"
+        $endpoint = Protect-YTPath -SafeBasePath 'admin/projects' -UnsafeChildPath $Project
+        Invoke-YTRestMethod -Session $Session -Method Delete -Name $endpoint
     }
 }

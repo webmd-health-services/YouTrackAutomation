@@ -103,7 +103,7 @@ function Get-YTIssue
     $endpoint = 'issues'
     if ($Issue)
     {
-        $endpoint = "${endpoint}/$([Uri]::EscapeDataString($Issue))"
+        $endpoint = Protect-YTPath -SafeBasePath $endpoint -UnsafeChildPath $Issue
     }
 
     $queryParams = @{}

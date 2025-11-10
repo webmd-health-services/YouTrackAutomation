@@ -72,7 +72,7 @@ function Get-YTProject
     $endpoint = 'admin/projects'
     if ($Project)
     {
-        $endpoint = "${endpoint}/$([URI]::EscapeDataString($Project))"
+        $endpoint = Protect-YTPath -SafeBasePath $endpoint -UnsafeChildPath $Project
     }
 
     $projects =

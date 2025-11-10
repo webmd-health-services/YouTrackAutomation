@@ -60,13 +60,13 @@ function Get-YTIssueCustomField
     Set-StrictMode -Version 'Latest'
     Use-CallerPreference -Cmdlet $PSCmdlet -SessionState $ExecutionContext.SessionState
 
-    $endpoint = "issues/$([URI]::EscapeDataString($Issue))/customFields"
+    $baseEndpoint = Protect-YTPath -SafeBasePath 'issues' -UnsafeChildPath $Issue
+    $endpoint = "${baseEndpoint}/customFields"
 
     if ($Field)
     {
-        $endpoint = "${endpoint}/$([URI]::EscapeDataString($Field))"
+        $endpoint = Protect-YTPath -SafeBasePath "${baseEndpoint}/fields" -UnsafeChildPath $Field
     }
-
     $propertyNames = Get-YTEntityField -Type 'IssueCustomField' -Depth 2
     $fields = Invoke-YTRestMethod -Session $session -Name $endpoint -Property $propertyNames
 
