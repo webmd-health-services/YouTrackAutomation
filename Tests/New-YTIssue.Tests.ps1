@@ -7,16 +7,7 @@ BeforeAll {
     Import-Module -Name (Join-Path -Path $PSScriptRoot -ChildPath 'YouTrackAutomationTestHelper' -Resolve)
 
     $script:session = Get-YTTSession
-    $script:projectShortName = 'NYTI'
-
-    $script:project = Get-YTProject -Session $script:session -Project $script:projectShortName -ErrorAction Ignore
-    if (-not $script:project)
-    {
-        $script:project = New-YTProject -Session $script:session `
-                                        -Leader 'admin' `
-                                        -Name 'New-YTIssue' `
-                                        -ShortName $script:projectShortName
-    }
+    $script:project = Initialize-YTTProject
 
     function GivenIssue
     {
@@ -92,10 +83,10 @@ Describe 'New-YTIssue' {
 
     It 'should allow issues with the same summary and description' {
         WhenCreatingIssue -WithArgs @{ Summary = 'same summary' ; Description = 'same description' }
-        ThenIssue -Summary 'same summary' -Description 'same description' -Project 'NYTI'
+        ThenIssue -Summary 'same summary' -Description 'same description' -Project $script:project.shortName
         $initialIssueId = $script:result.idReadable
         WhenCreatingIssue -WithArgs @{ Summary = 'same summary' ; Description = 'same description' }
-        ThenIssue -Summary 'same summary' -Description 'same description' -Project 'NYTI'
+        ThenIssue -Summary 'same summary' -Description 'same description' -Project $script:project.shortName
         $script:result.idReadable | Should -Not -Be $initialIssueId
     }
 

@@ -7,17 +7,7 @@ BeforeAll {
     Import-Module -Name (Join-Path -Path $PSScriptRoot -ChildPath 'YouTrackAutomationTestHelper' -Resolve)
 
     $script:session = Get-YTTSession
-
-    $shortName = 'GYTI'
-    $script:project = Get-YTProject -Session $script:session -Project 'GYTI' -ErrorAction Ignore
-    if (-not $script:project)
-    {
-        $script:project = New-YTProject -Session $script:session `
-                                        -Name 'Get-YTIssue' `
-                                        -ShortName $shortName `
-                                        -Leader 'admin' `
-                                        -Description 'Project for Get-YTIssue tests.'
-    }
+    $script:project = Initialize-YTTPRoject
 
     function GivenIssue
     {

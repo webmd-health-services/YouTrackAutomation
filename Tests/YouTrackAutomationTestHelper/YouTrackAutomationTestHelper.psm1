@@ -65,4 +65,57 @@ function Get-YTTSession
     return $script:ytSession
 }
 
-Export-ModuleMember -Function 'Get-YTTSession'
+function Initialize-YTTProject
+{
+    <#
+    .SYNOPSIS
+    Creates a test project for the caller.
+
+    .DESCRIPTION
+    The `Initialize-YTTProject` creates a project for the caller. Must be called from a .Tests.ps1 Pester file.
+    The project name is the caller's file name. The project's short name are the uppercase letters from the test file
+    name with .Tests.ps1 removed.
+    #>
+    [CmdletBinding()]
+    param(
+        [String] $Name,
+
+        [String] $ShortName,
+
+        [String] $Description
+    )
+
+    if (-not $Name -or -not $ShortName)
+    {
+        $caller =
+            Get-PSCallStack |
+            Where-Object 'ScriptName' -NE $PSCommandPath |
+            Select-Object -First 1
+
+        $callerFileName = $caller.ScriptName | Split-Path -Leaf
+        if (-not $Name)
+        {
+            $Name = $callerFileName
+        }
+
+        if (-not $ShortName)
+        {
+            $ShortName = $callerFileName -creplace '[^A-Z]',''
+            if ($callerFileName.EndsWith('.Tests.ps1'))
+            {
+                $ShortName = $ShortName.Substring(0, $ShortName.Length - 1)
+            }
+        }
+    }
+
+    $project = Get-YTProject -Session $script:ytSession -Project $ShortName -ErrorAction Ignore
+    if ($project)
+    {
+        return $project
+    }
+
+    $desc = "${Name} project."
+    return New-YTProject -Session $script:ytSession -Name $Name -ShortName $ShortName -Leader 'admin' -Description $desc
+}
+
+Export-ModuleMember -Function 'Get-YTTSession', 'Initialize-YTTPRoject'
