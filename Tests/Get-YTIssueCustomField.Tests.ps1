@@ -77,4 +77,19 @@ Describe 'Get-YTIssueCustomField' {
                 Should -Not -BeNullOrEmpty
         }
     }
+
+    It 'gets typed field' {
+        $field =
+            Get-YTIssueCustomField -Session $script:session -Issue 'DEMO-1' -Field 'State' -Type 'StateIssueCustomField'
+        $field | ConvertTo-Json -Depth 50 | Write-Verbose
+        $field | Should -Not -BeNullOrEmpty
+        $field | Should -HaveCount 1
+        # Specified the type for the value, so it should have that type's properties.
+        $field.value | Should -Not -BeNullOrEmpty
+        $field.value | Get-Member -Name 'localizedName' | Should -Not -BeNullOrEmpty
+        # Returns base bundle element
+        $field.value.bundle | Should -Not -BeNullOrEmpty
+        $field.value.bundle | Get-Member -Name 'isUpdateable' | Should -Not -BeNullOrEmpty
+    }
+
 }

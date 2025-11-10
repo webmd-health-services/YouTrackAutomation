@@ -24,6 +24,7 @@ function Get-YTEntityField
     * CustomFieldCondition
     * CustomFieldDefaults
     * DateFormatDescriptor
+    * DateIssueCustomField
     * DuplicateVote
     * EnumBundle
     * EnumBundleElement
@@ -42,16 +43,33 @@ function Get-YTEntityField
     * IssueWatcher
     * IssueWatchers
     * LocaleDescriptor
+    * MultiBuildIssueCustomField
+    * MultiEnumIssueCustomField
+    * MultiGroupIssueCustomField
+    * MultiOwnedIssueCustomField
+    * MultiUserIssueCustomField
+    * MultiVersionIssueCustomField
     * NotificationsUserProfile
     * OwnedBundle
     * OwnedBundleElement
     * PeriodFieldFormat
+    * PeriodIssueCustomField
+    * PeriodValue
     * Project
     * ProjectCustomField
     * ProjectTeam
     * Reaction
+    * SimpleIssueCustomField
+    * SingleBuildIssueCustomField
+    * SingleEnumIssueCustomField
+    * SingleGroupIssueCustomField
+    * SingleOwnedIssueCustomField
+    * SingleUserIssueCustomField
+    * SingleVersionIssueCustomField
     * StateBundle
     * StateBundleElement
+    * StateIssueCustomField
+    * StateMachineIssueCustomField
     * Tag
     * TagSharingSettings
     * TimeTrackingUserProfile
@@ -87,6 +105,7 @@ function Get-YTEntityField
             'CustomFieldCondition',
             'CustomFieldDefaults',
             'DateFormatDescriptor',
+            'DateIssueCustomField',
             'DuplicateVote',
             'EnumBundle',
             'EnumBundleElement',
@@ -105,16 +124,33 @@ function Get-YTEntityField
             'IssueWatcher',
             'IssueWatchers',
             'LocaleDescriptor',
+            'MultiBuildIssueCustomField',
+            'MultiEnumIssueCustomField',
+            'MultiGroupIssueCustomField',
+            'MultiOwnedIssueCustomField',
+            'MultiUserIssueCustomField',
+            'MultiVersionIssueCustomField',
             'NotificationsUserProfile',
             'OwnedBundle',
             'OwnedBundleElement',
             'PeriodFieldFormat',
+            'PeriodIssueCustomField',
+            'PeriodValue',
             'Project',
             'ProjectCustomField',
             'ProjectTeam',
             'Reaction',
+            'SimpleIssueCustomField',
+            'SingleBuildIssueCustomField',
+            'SingleEnumIssueCustomField',
+            'SingleGroupIssueCustomField',
+            'SingleOwnedIssueCustomField',
+            'SingleUserIssueCustomField',
+            'SingleVersionIssueCustomField',
             'StateBundle',
             'StateBundleElement',
+            'StateIssueCustomField',
+            'StateMachineIssueCustomField',
             'Tag',
             'TagSharingSettings',
             'TimeTrackingUserProfile',

@@ -74,6 +74,12 @@ $script:entityAttributes = @{
         @{ Name = 'parent' ; Type = 'CustomField' }
     );
     DateFormatDescriptor = @( 'id', 'presentation', 'pattern', 'datePattern' );
+    DateIssueCustomField  = @(
+        'id',
+        'value',
+        'name',
+        @{ Name = 'projectCustomField' ; Type = 'ProjectCustomField' }
+    )
     DuplicateVote = @(
         'id',
         @{ Name = 'issue' ; Type = 'Issue' },
@@ -95,6 +101,7 @@ $script:entityAttributes = @{
         @{ Name = 'color'; Type = 'FieldStyle' },
         'hasRunningJob'
     )
+    Event = @( 'id', 'presentation' )
     ExternalIssue = @( 'id', 'name', 'url', 'key');
     FieldType = @( 'id' );
     FieldStyle = @( 'id', 'background', 'foreground' );
@@ -172,7 +179,8 @@ $script:entityAttributes = @{
         'id',
         'name',
         @{ Name = 'projectCustomField' ; Type = 'ProjectCustomField' },
-        @{ Name = 'value' ; Type = 'YTAIssueCustomFieldValue' }
+        # Only field shared by all custom fields.
+        'value(id)'
     );
     IssueLink = @(
         'id',
@@ -211,6 +219,42 @@ $script:entityAttributes = @{
         @{ Name = 'duplicateWatchers' ; Type = 'IssueWatcher' }
     );
     LocaleDescriptor = @( 'id', 'locale', 'language', 'community', 'name' );
+    MultiBuildIssueCustomField = @(
+        'id',
+        @{ Name = 'value' ; Type = 'BuildBundleElement' },
+        'name',
+        @{ Name = 'projectCustomField' ; Type = 'ProjectCustomField' }
+    )
+    MultiEnumIssueCustomField = @(
+        'id',
+        @{ Name = 'value' ; Type = 'EnumBundleElement' },
+        'name',
+        @{ Name = 'projectCustomField' ; Type = 'ProjectCustomField' }
+    )
+    MultiGroupIssueCustomField = @(
+        'id',
+        @{ Name = 'value' ; Type = 'UserGroup' },
+        'name',
+        @{ Name = 'projectCustomField' ; Type = 'ProjectCustomField' }
+    )
+    MultiOwnedIssueCustomField = @(
+        'id',
+        @{ Name = 'value' ; Type = 'OwnedBundleElement' },
+        'name',
+        @{ Name = 'projectCustomField' ; Type = 'ProjectCustomField' }
+    )
+    MultiUserIssueCustomField = @(
+        'id',
+        @{ Name = 'value' ; Type = 'User' },
+        'name',
+        @{ Name = 'projectCustomField' ; Type = 'ProjectCustomField' }
+    )
+    MultiVersionIssueCustomField  = @(
+        'id',
+        @{ Name = 'value' ; Type = 'VersionBundleElement' },
+        'name',
+        @{ Name = 'projectCustomField' ; Type = 'ProjectCustomField' }
+    )
     NotificationsUserProfile = @(
         'id',
         'notifyOnOwnChanges',
@@ -241,6 +285,13 @@ $script:entityAttributes = @{
         'hasRunningJob'
     )
     PeriodFieldFormat = @( 'id' );
+    PeriodIssueCustomField  = @(
+        'id',
+        @{ Name = 'value' ; Type = 'PeriodValue' },
+        'name',
+        @{ Name = 'projectCustomField' ; Type = 'ProjectCustomField' }
+    )
+    PeriodValue = @( 'id', 'minutes', 'presentation' )
     Project = @(
         'id',
         'archived',
@@ -282,6 +333,48 @@ $script:entityAttributes = @{
         @{ Name = 'author' ; Type = 'User' },
         'reaction'
     );
+    SimpleIssueCustomField  = @(
+        'id',
+        'value',
+        'name',
+        @{ Name = 'projectCustomField' ; Type = 'ProjectCustomField' }
+    )
+    SingleBuildIssueCustomField = @(
+        'id',
+        @{ Name = 'value' ; Type = 'BuildBundleElement' },
+        'name',
+        @{ Name = 'projectCustomField' ; Type = 'ProjectCustomField' }
+    )
+    SingleEnumIssueCustomField = @(
+        'id',
+        @{ Name = 'value' ; Type = 'EnumBundleElement' },
+        'name',
+        @{ Name = 'projectCustomField' ; Type = 'ProjectCustomField' }
+    )
+    SingleGroupIssueCustomField = @(
+        'id',
+        @{ Name = 'value' ; Type = 'UserGroup' },
+        'name',
+        @{ Name = 'projectCustomField' ; Type = 'ProjectCustomField' }
+    )
+    SingleOwnedIssueCustomField = @(
+        'id',
+        @{ Name = 'value' ; Type = 'OwnedBundleElement' },
+        'name',
+        @{ Name = 'projectCustomField' ; Type = 'ProjectCustomField' }
+    )
+    SingleUserIssueCustomField = @(
+        'id',
+        @{ Name = 'value' ; Type = 'User' },
+        'name',
+        @{ Name = 'projectCustomField' ; Type = 'ProjectCustomField' }
+    )
+    SingleVersionIssueCustomField = @(
+        'id',
+        @{ Name = 'value' ; Type = 'VersionBundleElement' },
+        'name',
+        @{ Name = 'projectCustomField' ; Type = 'ProjectCustomField' }
+    )
     StateBundle = @(
         'id',
         @{ Name = 'values' ; Type = 'StateBundleElement' },
@@ -298,6 +391,21 @@ $script:entityAttributes = @{
         'ordinal',
         @{ Name = 'color'; Type = 'FieldStyle' },
         'hasRunningJob'
+    )
+    StateMachineIssueCustomField = @(
+        'id',
+        # Value can be bundles, user, or user group. They only have `id` field in common. :(
+        'value(id)',
+        @{ Name = 'event' ; Type = 'Event' },
+        @{ Name = 'possibleEvents' ; Type = 'Event' },
+        'name',
+        @{ Name = 'projectCustomField' ; Type = 'ProjectCustomField' }
+    )
+    StateIssueCustomField = @(
+        'id',
+        @{ Name = 'value' ; Type = 'StateBundleElement' },
+        'name',
+        @{ Name = 'projectCustomField' ; Type = 'ProjectCustomField' }
     )
     Tag = @(
         'id',
@@ -377,12 +485,6 @@ $script:entityAttributes = @{
         'id',
         @{ Name = 'permittedGroups' ; Type = 'UserGroup' },
         @{ Name = 'permittedUsers' ; Type = 'User' }
-    )
-    # These are virtual fields that don't exist in YouTrack but we need them.
-    YTAIssueCustomFieldValue = @(
-        'id',
-        'name',
-        @{ Name = 'value' ; Type = 'YTAIssueCustomFieldValue' }
     )
 }
 

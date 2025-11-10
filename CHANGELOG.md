@@ -57,6 +57,7 @@
 * Function `Protect-YTPath` for creating a URL-safe paths to a YouTrack API resource using values that come from users.
 * Function `Get-YTBundle` for getting a YouTrack bundle.
 * Pipe issue objects, issue IDs, or issue readable IDs to `Get-YTIssueCustomField`.
+* `Get-YTIssueCustomField` returns all object properties on custom field when given custom field type.
 
 ### Changed
 

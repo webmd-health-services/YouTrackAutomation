@@ -10,7 +10,8 @@ function Get-YTIssueCustomField
     `Issue` parameter. All the custom fields for that issue are returned along with their ID and name (value).
 
     To get a specific custom field, pass its name or ID to the `Field` parameter. To get just the field's value, use the
-    `Value` switch.
+    `Value` switch. To get a typed object back, (i.e. all the field's properties exist), pass the field's type to the
+    `Type` parameter.
 
     .EXAMPLE
     Get-YTIssueCustomField -Session $session -Issue 'DEMO-4'
@@ -27,6 +28,12 @@ function Get-YTIssueCustomField
     Get-YTIssueCustomField -Session $session -Issue 'DEMO-20' -Field 'State' -ValueOnly
 
     Demonstrates how to get just the value of a custom field using the `ValueOnly` switch.
+
+    .EXAMPLE
+    Get-YTIssueCustomField -Session $session -Issue 'DEMO-2' -Field 'State' -Type 'StateIssueCustomField'
+
+    Demonstrates how to return an object with the properties of the specific field type you want by passing the field's
+    type name to the `Type` parameter.
     #>
     [CmdletBinding(DefaultParameterSetName='AllFields')]
     param(
@@ -46,17 +53,11 @@ function Get-YTIssueCustomField
 
         # Returns only the value of the custom field.
         [Parameter(ParameterSetName='SpecificField')]
-        [switch] $ValueOnly
+        [switch] $ValueOnly,
 
-        # TODO: Add a Type parameter so that all of a specific custom field's data is returned. Will need to iterate
-        # through all the issue custom field entities at https://www.jetbrains.com/help/youtrack/devportal/api-entity-IssueCustomField.html
-        # and add them to the list of fields in YouTrackAutomation.psm1. Add a ValidateSet attribute for all the known
-        # issue custom type entity names.
-        #
-        # Maybe make the type optional and if it isn't returned, make a request to get the field's type, then another
-        # request to get its value?
-        # [ValidateSet('MultiBuildIssueCustomField', 'MultiEnumIssueCustomField', ...)]
-        # [String] $Type
+        # The field's type. Controls what properties exist on the returned object.
+        [Parameter(ParameterSetName='SpecificField')]
+        [String] $Type
     )
 
     process
@@ -71,7 +72,26 @@ function Get-YTIssueCustomField
         {
             $endpoint = Protect-YTPath -SafeBasePath "${baseEndpoint}/fields" -UnsafeChildPath $Field
         }
-        $propertyNames = Get-YTEntityField -Type 'IssueCustomField' -Depth 2
+
+        $isTyped = $true
+        if (-not $Type)
+        {
+            $isTyped = $false
+            $Type = 'IssueCustomField'
+        }
+
+        $propertyNames = Get-YTEntityField -Type $Type -Depth 2
+
+        # User wants custom value type, so all the sub-types are known and we should go one level deeper to get all the
+        # info.
+        if ($isTyped)
+        {
+            $propertyNames = & {
+                $propertyNames | Where-Object { -not $_.StartsWith('value(') } | Write-Output
+                Get-YTEntityField -Type $Type -Depth 3 | Where-Object { $_.StartsWith('value(') }
+            }
+        }
+
         $fields = Invoke-YTRestMethod -Session $session -Name $endpoint -Property $propertyNames
 
         if ($ValueOnly)
