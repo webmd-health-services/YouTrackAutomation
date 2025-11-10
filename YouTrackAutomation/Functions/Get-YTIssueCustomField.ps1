@@ -35,7 +35,9 @@ function Get-YTIssueCustomField
         [Object] $Session,
 
         # The ID of the issue.
-        [Parameter(Mandatory)]
+        [Parameter(Mandatory, ValueFromPipeline, ValueFromPipelineByPropertyName)]
+        [Alias('id')]
+        [Alias('idReadable')]
         [String] $Issue,
 
         # The name or ID of the specific custom field to get. Default is to return all the issue's custom fields.
@@ -57,23 +59,26 @@ function Get-YTIssueCustomField
         # [String] $Type
     )
 
-    Set-StrictMode -Version 'Latest'
-    Use-CallerPreference -Cmdlet $PSCmdlet -SessionState $ExecutionContext.SessionState
-
-    $baseEndpoint = Protect-YTPath -SafeBasePath 'issues' -UnsafeChildPath $Issue
-    $endpoint = "${baseEndpoint}/customFields"
-
-    if ($Field)
+    process
     {
-        $endpoint = Protect-YTPath -SafeBasePath "${baseEndpoint}/fields" -UnsafeChildPath $Field
-    }
-    $propertyNames = Get-YTEntityField -Type 'IssueCustomField' -Depth 2
-    $fields = Invoke-YTRestMethod -Session $session -Name $endpoint -Property $propertyNames
+        Set-StrictMode -Version 'Latest'
+        Use-CallerPreference -Cmdlet $PSCmdlet -SessionState $ExecutionContext.SessionState
 
-    if ($ValueOnly)
-    {
-        return $fields.value.name
-    }
+        $baseEndpoint = Protect-YTPath -SafeBasePath 'issues' -UnsafeChildPath $Issue
+        $endpoint = "${baseEndpoint}/customFields"
 
-    return $fields
+        if ($Field)
+        {
+            $endpoint = Protect-YTPath -SafeBasePath "${baseEndpoint}/fields" -UnsafeChildPath $Field
+        }
+        $propertyNames = Get-YTEntityField -Type 'IssueCustomField' -Depth 2
+        $fields = Invoke-YTRestMethod -Session $session -Name $endpoint -Property $propertyNames
+
+        if ($ValueOnly)
+        {
+            return $fields.value.name
+        }
+
+        return $fields
+    }
 }

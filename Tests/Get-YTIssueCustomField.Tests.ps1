@@ -45,4 +45,36 @@ Describe 'Get-YTIssueCustomField' {
     It 'returns just the value' {
         Get-YTIssueCustomField -Session $script:session -Issue 'DEMO-1' -Field 'State' -ValueOnly | Should -Be 'Fixed'
     }
+
+    Context 'piped input' {
+        It 'accepts issue id' {
+            (Get-YTIssue -Session $script:session -Issue 'DEMO-1').id |
+                Get-YTIssueCustomField -Session $script:session |
+                Should -Not -BeNullOrEmpty
+        }
+
+        It 'accepts issue readable id' {
+            'DEMO-1' | Get-YTIssueCustomField -Session $script:session | Should -Not -BeNullOrEmpty
+        }
+
+        It 'accepts object' {
+            Get-YTIssue -Session $script:session -Issue 'DEMO-1' |
+                Get-YTIssueCustomField -Session $script:session |
+                Should -Not -BeNullOrEmpty
+        }
+
+        It 'accepts object with id' {
+            Get-YTIssue -Session $script:session -Issue 'DEMO-1' |
+                Select-Object -Property 'id' |
+                Get-YTIssueCustomField -Session $script:session |
+                Should -Not -BeNullOrEmpty
+        }
+
+        It 'accepts object with readable id' {
+            Get-YTIssue -Session $script:session -Issue 'DEMO-1' |
+                Select-Object -Property 'idReadable' |
+                Get-YTIssueCustomField -Session $script:session |
+                Should -Not -BeNullOrEmpty
+        }
+    }
 }
