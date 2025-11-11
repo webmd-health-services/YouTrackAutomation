@@ -3,20 +3,35 @@ function Get-YTEntityField
 {
     <#
     .SYNOPSIS
-    Gets the complete fields list for a given YouTrack entity.
+    Gets a fields list for a YouTrack entity.
 
     .DESCRIPTION
-    The `Get-YTEntityField` function gets the fields list for a given YouTrack entity as an array of strings. This list
-    can be passed to the `Property` parameter on any YouTrackAutomation module function with that parameter. The list is
-    sent as the value of the `fields` query string parameter when making a request to the YouTrack REST API. The field
-    list will be constructed to avoid infinite recursion: once a field with a given type is included in the list, none
-    of that fields descendants will include any objects of that type.
+    The `Get-YTEntityField` function gets a list of a YouTrack entity's fields/properties/attributes as an array of
+    strings. Pass the entity's type name to the `Type` parameter. If an entity has nested objects, only the object's
+    `id` property is returned. If an entity has fields whose values are arrays, those properties are omitted as an
+    optimization: when requesting a field that is an array, YouTrack reads all the array's elements.
 
-    By default, properties of nested objects are not returned, i.e. the depth of the values returned is restricted to
-    the entity itself. To return nested object values, pass the depth you'd like to the `Depth` parameter.
+    The field list can be sent to any API endpoint's `fields` query parameter, by joining the fields list with a `,`
+    character:
 
-    Pass the entity's type name to the `Type` parameter. That entity's fields will be returned. Only the following
-    entities are currently supported:
+        $fields = Get-YTEntityField -Type 'User'
+        $resourcePath = "users/me?fields=$([Uri]::EscapeDataString($fields -join ','))"
+
+    Many of YouTrackAutomation module's function have a `Property` parameter that manages sending the `fields` query
+    parameter for you:
+
+        $fields = Get-YTEntityField -Type 'Issue'
+        Get-YTIssue -Session $session -Issue 'DEMO-4' -Property $fields
+        Invoke-YTRestMethod -Session $session -Name 'resource/endpoint' -Property $fields
+
+    If you want nested object properties and arrays present, use the `Depth` parameter to control how deep you want
+    objects. The default depth is 1. Objects at the deepest level will never return array properties and any object
+    properties will ony have `id` properties.
+
+    YouTrack's entities contain circular references. In order to avoid creating an infinite field list, once a field
+    with a given type is in the field list, that field type will be omitted from descendants.
+
+    The following entities are currently supported:
 
     * BuildBundle
     * BuildBundleElement
@@ -86,7 +101,7 @@ function Get-YTEntityField
     .EXAMPLE
     Get-YTEntityField -Type Project
 
-    Demonstrates how to get a field list tha will return all the Project entity's fields.
+    Demonstrates how to get a field list that will return all the Project entity's fields.
 
     .EXAMPLE
     Get-YTEntityField -Type Issue -Depth 2
@@ -206,23 +221,33 @@ function Get-YTEntityField
                     return $_
                 }
 
-                $itemName = $_['Name']
+                $fieldName = $_['Name']
 
                 if ($doNotRecurse)
                 {
-                    return $itemName
+                    $isArray = $_['IsArray']
+
+                    # Arrays can be *very* expensive because YouTrack retrieves every element in the array even if none
+                    # of its properties are returned.
+                    if ($isArray)
+                    {
+                        return
+                    }
+
+                    # Return the ID of all nested objects to users don't have to make another request to get it.
+                    return "${fieldName}(id)"
                 }
 
-                $itemType = $_['Type']
+                $fieldType = $_['Type']
 
                 # Avoid infinite recursion.
-                if ($itemType -in $Parent)
+                if ($fieldType -in $Parent)
                 {
                     return
                 }
 
-                Get-EntityField -Name $itemName `
-                                -Type $itemType `
+                Get-EntityField -Name $fieldName `
+                                -Type $fieldType `
                                 -CurrentDepth ($CurrentDepth + 1) `
                                 -Parent ($Parent + $Type)
             }

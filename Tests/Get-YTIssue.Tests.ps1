@@ -79,7 +79,7 @@ Describe 'Get-YTIssue' {
         # Make sure two level of properties returned
         $script:result.updater | Should -Not -BeNullOrEmpty
         $script:result.updater.id | Should -Not -BeNullOrEmpty
-        $script:result.updater.tags | Get-Member 'id' | Should -BeNullOrEmpty
+        $script:result.updater | Get-Member 'tags' | Should -BeNullOrEmpty
     }
 
     It 'supports issue readable ID' {

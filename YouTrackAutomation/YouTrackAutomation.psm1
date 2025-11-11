@@ -28,7 +28,7 @@ $script:defaultIssueFieldDepth = 2
 $script:entityAttributes = @{
     BuildBundle = @(
         'id',
-        @{ Name = 'values' ; Type = 'BuildBundleElement' },
+        @{ Name = 'values' ; Type = 'BuildBundleElement' ; IsArray = $true },
         'isUpdateable'
     )
     BuildBundleElement = @(
@@ -60,7 +60,7 @@ $script:entityAttributes = @{
         @{ Name = 'fieldDefaults' ; Type = 'CustomFieldDefaults' },
         'hasRunningJob',
         'isUpdateable',
-        @{ Name = 'instances' ; Type = 'ProjectCustomField' }
+        @{ Name = 'instances' ; Type = 'ProjectCustomField' ; IsArray = $true }
     );
     CustomFieldCondition = @(
         'id',
@@ -87,7 +87,7 @@ $script:entityAttributes = @{
     );
     EnumBundle = @(
         'id',
-        @{ Name = 'values' ; Type = 'EnumBundleElement' },
+        @{ Name = 'values' ; Type = 'EnumBundleElement' ; IsArray = $true },
         'isUpdateable'
     )
     EnumBundleElement = @(
@@ -113,26 +113,26 @@ $script:entityAttributes = @{
     );
     Issue = @(
         'id',
-        @{ Name = 'attachments' ; Type = 'IssueAttachment' },
-        @{ Name = 'comments' ; Type = 'IssueComment' },
+        @{ Name = 'attachments' ; Type = 'IssueAttachment' ; IsArray = $true },
+        @{ Name = 'comments' ; Type = 'IssueComment' ; IsArray = $true },
         'commentsCount',
         'created',
-        @{ Name = 'customFields' ; Type = 'IssueCustomField' },
+        @{ Name = 'customFields' ; Type = 'IssueCustomField' ; IsArray = $true },
         'description',
         @{ Name = 'draftOwner' ; Type = 'User' },
         @{ Name = 'externalIssue' ; Type = 'ExternalIssue' },
         'idReadable',
         'isDraft',
-        @{ Name = 'links' ; Type = 'IssueLink' },
+        @{ Name = 'links' ; Type = 'IssueLink' ; IsArray = $true },
         'numberInProject',
         @{ Name = 'parent' ; Type = 'IssueLink' },
-        @{ Name = 'pinnedComments' ; Type = 'IssueComment' },
+        @{ Name = 'pinnedComments' ; Type = 'IssueComment' ; IsArray = $true },
         @{ Name = 'project' ; Type = 'Project' },
         @{ Name = 'reporter' ; Type = 'User' },
         'resolved',
         @{ Name = 'subtasks' ; Type = 'IssueLink' },
         'summary',
-        @{ Name = 'tags' ; Type = 'Tag' },
+        @{ Name = 'tags' ; Type = 'Tag' ; IsArray = $true },
         'updated',
         @{ Name = 'updater' ; Type = 'User' },
         @{ Name = 'visibility' ; Type = 'Visibility' },
@@ -157,19 +157,19 @@ $script:entityAttributes = @{
         'base64Content',
         'url',
         @{ Name = 'visibility' ; Type = 'Visibility' },
-        @{ Name = 'issue' ; Type = 'Issue';},
+        @{ Name = 'issue' ; Type = 'Issue' },
         @{ Name = 'comment' ; Type = 'IssueComment' },
         'thumbnailUrl'
     );
     IssueComment = @(
         'id',
-        @{ Name = 'attachments' ; Type = 'IssueAttachment' },
+        @{ Name = 'attachments' ; Type = 'IssueAttachment' ; IsArray = $true },
         @{ Name = 'author' ; Type = 'User' },
         'created',
         'deleted',
         @{ Name = 'issue' ; Type = 'Issue' },
         'pinned',
-        @{ Name = 'reactions' ; Type = 'Reaction' },
+        @{ Name = 'reactions' ; Type = 'Reaction' ; IsArray = $true },
         'text',
         'textPreview',
         'updated',
@@ -186,7 +186,7 @@ $script:entityAttributes = @{
         'id',
         'direction',
         @{ Name = 'linkType' ; Type = 'IssueLinkType' },
-        @{ Name = 'issues' ; Type = 'Issue' }
+        @{ Name = 'issues' ; Type = 'Issue' ; IsArray = $true }
     );
     IssueLinkType = @(
         'id',
@@ -203,8 +203,8 @@ $script:entityAttributes = @{
     IssueVoters = @(
         'id',
         'hasVote',
-        @{ Name = 'original' ; Type = 'User' },
-        @{ Name = 'duplicate' ; Type = 'DuplicateVote' }
+        @{ Name = 'original' ; Type = 'User' ; IsArray = $true },
+        @{ Name = 'duplicate' ; Type = 'DuplicateVote' ; IsArray = $true }
     );
     IssueWatcher = @(
         'id',
@@ -215,8 +215,8 @@ $script:entityAttributes = @{
     IssueWatchers = @(
         'id',
         'hasStar',
-        @{ Name = 'issueWatchers' ; Type = 'IssueWatcher' },
-        @{ Name = 'duplicateWatchers' ; Type = 'IssueWatcher' }
+        @{ Name = 'issueWatchers' ; Type = 'IssueWatcher' ; IsArray = $true },
+        @{ Name = 'duplicateWatchers' ; Type = 'IssueWatcher' ; IsArray = $true }
     );
     LocaleDescriptor = @( 'id', 'locale', 'language', 'community', 'name' );
     Me = @(
@@ -228,44 +228,44 @@ $script:entityAttributes = @{
         'guest',
         'online',
         'banned',
-        @{ Name = 'tags' ; Type = 'Tag' },
-        @{ Name = 'savedQueries' ; Type = 'SavedQuery' },
+        @{ Name = 'tags' ; Type = 'Tag' ; IsArray = $true },
+        @{ Name = 'savedQueries' ; Type = 'SavedQuery' ; IsArray = $true },
         'avatarUrl',
         @{ Name = 'userProfiles' ; Type = 'UserProfiles' }
     )
     MultiBuildIssueCustomField = @(
         'id',
-        @{ Name = 'value' ; Type = 'BuildBundleElement' },
+        @{ Name = 'value' ; Type = 'BuildBundleElement' ; IsArray = $true },
         'name',
         @{ Name = 'projectCustomField' ; Type = 'ProjectCustomField' }
     )
     MultiEnumIssueCustomField = @(
         'id',
-        @{ Name = 'value' ; Type = 'EnumBundleElement' },
+        @{ Name = 'value' ; Type = 'EnumBundleElement' ; IsArray = $true },
         'name',
         @{ Name = 'projectCustomField' ; Type = 'ProjectCustomField' }
     )
     MultiGroupIssueCustomField = @(
         'id',
-        @{ Name = 'value' ; Type = 'UserGroup' },
+        @{ Name = 'value' ; Type = 'UserGroup' ; IsArray = $true },
         'name',
         @{ Name = 'projectCustomField' ; Type = 'ProjectCustomField' }
     )
     MultiOwnedIssueCustomField = @(
         'id',
-        @{ Name = 'value' ; Type = 'OwnedBundleElement' },
+        @{ Name = 'value' ; Type = 'OwnedBundleElement' ; IsArray = $true },
         'name',
         @{ Name = 'projectCustomField' ; Type = 'ProjectCustomField' }
     )
     MultiUserIssueCustomField = @(
         'id',
-        @{ Name = 'value' ; Type = 'User' },
+        @{ Name = 'value' ; Type = 'User' ; IsArray = $true },
         'name',
         @{ Name = 'projectCustomField' ; Type = 'ProjectCustomField' }
     )
     MultiVersionIssueCustomField  = @(
         'id',
-        @{ Name = 'value' ; Type = 'VersionBundleElement' },
+        @{ Name = 'value' ; Type = 'VersionBundleElement' ; IsArray = $true },
         'name',
         @{ Name = 'projectCustomField' ; Type = 'ProjectCustomField' }
     )
@@ -284,7 +284,7 @@ $script:entityAttributes = @{
     );
     OwnedBundle = @(
         'id',
-        @{ Name = 'values' ; Type = 'OwnedBundleElement' },
+        @{ Name = 'values' ; Type = 'OwnedBundleElement' ; IsArray = $true },
         'isUpdateable'
     )
     OwnedBundleElement = @(
@@ -310,11 +310,11 @@ $script:entityAttributes = @{
         'id',
         'archived',
         'createdBy',
-        @{ Name = 'customFields' ; Type = 'ProjectCustomField' },
+        @{ Name = 'customFields' ; Type = 'ProjectCustomField' ; IsArray = $true },
         'description',
         'fromEmail',
         'iconUrl',
-        @{ Name = 'issues' ; Type = 'Issue' },
+        @{ Name = 'issues' ; Type = 'Issue' ; IsArray = $true },
         @{ Name = 'leader' ; Type = 'User' },
         'name',
         'replyToEmail',
@@ -350,7 +350,7 @@ $script:entityAttributes = @{
     SavedQuery = @(
         'id',
         'query',
-        @{ Name = 'issues' ; Type = 'Issue' },
+        @{ Name = 'issues' ; Type = 'Issue' ; IsArray = $true },
         @{ Name = 'visibleFor' ; Type = 'UserGroup' },
         @{ Name = 'updateableBy' ; Type = 'UserGroup' },
         @{ Name = 'readSharingSetings' ; Type = 'WatchFolderSharingSettings' },
@@ -402,7 +402,7 @@ $script:entityAttributes = @{
     )
     StateBundle = @(
         'id',
-        @{ Name = 'values' ; Type = 'StateBundleElement' },
+        @{ Name = 'values' ; Type = 'StateBundleElement' ; IsArray = $true },
         'isUpdateable'
     )
     StateBundleElement = @(
@@ -422,7 +422,7 @@ $script:entityAttributes = @{
         # Value can be bundles, user, or user group. They only have `id` field in common. :(
         'value(id)',
         @{ Name = 'event' ; Type = 'Event' },
-        @{ Name = 'possibleEvents' ; Type = 'Event' },
+        @{ Name = 'possibleEvents' ; Type = 'Event' ; IsArray = $true },
         'name',
         @{ Name = 'projectCustomField' ; Type = 'ProjectCustomField' }
     )
@@ -434,7 +434,7 @@ $script:entityAttributes = @{
     )
     Tag = @(
         'id',
-        @{ Name = 'issues' ; Type = 'Issue' },
+        @{ Name = 'issues' ; Type = 'Issue' ; IsArray = $true },
         @{ Name = 'color' ; Type = 'FieldStyle' },
         'untagOnResolve',
         @{ Name = 'visibleFor' ; Type = 'UserGroup' },
@@ -447,7 +447,7 @@ $script:entityAttributes = @{
     );
     TagSharingSettings = @(
         'id',
-        @{ Name = 'permittedGroups' ; Type = 'UserGroup' },
+        @{ Name = 'permittedGroups' ; Type = 'UserGroup' ; IsArray = $true },
         @{ Name = 'permittedUsers' ; Type = 'User' }
     );
     TimeTrackingUserProfile = @(
@@ -464,7 +464,8 @@ $script:entityAttributes = @{
         'guest',
         'online',
         'banned',
-        @{ Name = 'tags' ; Type = 'Tag' },
+        @{ Name = 'tags' ; Type = 'Tag' ; IsArray = $true },
+        @{ Name = 'savedQueries' ; Type = 'SavedQuery' ; IsArray = $true },
         'avatarUrl',
         @{ Name = 'userProfiles' ; Type = 'UserProfiles' }
     );
@@ -485,7 +486,7 @@ $script:entityAttributes = @{
     );
     VersionBundle = @(
         'id',
-        @{ Name = 'values' ; Type = 'VersionBundleElement' },
+        @{ Name = 'values' ; Type = 'VersionBundleElement' ; IsArray = $true },
         'isUpdateable'
     )
     VersionBundleElement = @(
@@ -503,13 +504,13 @@ $script:entityAttributes = @{
     )
     Visibility = @(
         'id',
-        @{ Name = 'permittedGroups' ; Type = 'UserGroup' },
-        @{ Name = 'permittedUsers' ; Type = 'User' }
+        @{ Name = 'permittedGroups' ; Type = 'UserGroup' ; IsArray = $true },
+        @{ Name = 'permittedUsers' ; Type = 'User' ; IsArray = $true }
     );
     WatchFolderSharingSettings = @(
         'id',
-        @{ Name = 'permittedGroups' ; Type = 'UserGroup' },
-        @{ Name = 'permittedUsers' ; Type = 'User' }
+        @{ Name = 'permittedGroups' ; Type = 'UserGroup' ; IsArray = $true },
+        @{ Name = 'permittedUsers' ; Type = 'User' ; IsArray = $true }
     )
 }
 
