@@ -59,6 +59,8 @@
 * Pipe issue objects, issue IDs, or issue readable IDs to `Get-YTIssueCustomField`.
 * `Get-YTIssueCustomField` returns all object properties on custom field when given custom field type.
 * `New-YTIssue` sets custom fields on issue creation. Pass custom fields to new `CustomField` parameter.
+* `Get-YTIssueState` function to get an issue's state.
+* `Set-YTIssueState` function to set an issue's state.
 
 ### Changed
 

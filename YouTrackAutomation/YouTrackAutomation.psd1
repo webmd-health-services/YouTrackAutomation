@@ -80,6 +80,7 @@
         'Get-YTEntityField',
         'Get-YTIssue',
         'Get-YTIssueCustomField',
+        'Get-YTIssueState',
         'Get-YTProject',
         'Invoke-YTCommand',
         'Invoke-YTRestMethod',
@@ -87,7 +88,8 @@
         'New-YTIssue',
         'New-YTProject',
         'New-YTSession',
-        'Remove-YTProject'
+        'Remove-YTProject',
+        'Set-YTIssueState'
     )
 
     # Cmdlets to export from this module. By default, you get a script module, so there are no cmdlets.
