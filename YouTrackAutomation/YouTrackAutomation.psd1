@@ -82,6 +82,7 @@
         'Get-YTIssueCustomField',
         'Get-YTIssueState',
         'Get-YTProject',
+        'Get-YTUser',
         'Invoke-YTCommand',
         'Invoke-YTRestMethod',
         'Protect-YTPath',

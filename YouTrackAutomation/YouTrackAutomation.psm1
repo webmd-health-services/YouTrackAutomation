@@ -219,6 +219,20 @@ $script:entityAttributes = @{
         @{ Name = 'duplicateWatchers' ; Type = 'IssueWatcher' }
     );
     LocaleDescriptor = @( 'id', 'locale', 'language', 'community', 'name' );
+    Me = @(
+        'id',
+        'login',
+        'fullName',
+        'email',
+        'ringId',
+        'guest',
+        'online',
+        'banned',
+        @{ Name = 'tags' ; Type = 'Tag' },
+        @{ Name = 'savedQueries' ; Type = 'SavedQuery' },
+        'avatarUrl',
+        @{ Name = 'userProfiles' ; Type = 'UserProfiles' }
+    )
     MultiBuildIssueCustomField = @(
         'id',
         @{ Name = 'value' ; Type = 'BuildBundleElement' },
@@ -333,6 +347,17 @@ $script:entityAttributes = @{
         @{ Name = 'author' ; Type = 'User' },
         'reaction'
     );
+    SavedQuery = @(
+        'id',
+        'query',
+        @{ Name = 'issues' ; Type = 'Issue' },
+        @{ Name = 'visibleFor' ; Type = 'UserGroup' },
+        @{ Name = 'updateableBy' ; Type = 'UserGroup' },
+        @{ Name = 'readSharingSetings' ; Type = 'WatchFolderSharingSettings' },
+        @{ Name = 'updateSharingSettings' ; Type = 'WatchFolderSharingSettings' },
+        @{ Name = 'owner' ; Type = 'User' },
+        'name'
+    )
     SimpleIssueCustomField  = @(
         'id',
         'value',

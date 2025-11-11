@@ -62,6 +62,7 @@
 * `New-YTIssue` sets custom fields on issue creation. Pass custom fields to new `CustomField` parameter.
 * `Get-YTIssueState` function to get an issue's state.
 * `Set-YTIssueState` function to set an issue's state.
+* `Get-YTUser` function to get users.
 
 ### Changed
 
