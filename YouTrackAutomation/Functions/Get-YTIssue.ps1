@@ -7,7 +7,8 @@ function Get-YTIssue
 
     .DESCRIPTION
     The `Get-YTIssue` function gets issue from YouTrack. By default all issues are returned. To get a specific issue,
-    pass its ID or its readable ID to the `Issue` parameter.
+    pass its ID or its readable ID to the `Issue` parameter. You can also pipe issue objects, issue IDs and/or issue
+    readable IDs to get multiple issues.
 
     By default all issue fields and fields for those fields are returned. Use the `Property` parameter to customize what
     fields to return and what fields on nested objects to return. Use the `Get-YTEntityField` function to get a full
@@ -67,7 +68,9 @@ function Get-YTIssue
         [Object] $Session,
 
         # The ID (e.g. `3-4`) or readable ID (e.g., `DEMO-3`) of the issue to get. Default is to get all issues.
-        [Parameter(Mandatory, ParameterSetName='SpecificIssue')]
+        [Parameter(Mandatory, ParameterSetName='SpecificIssue', ValueFromPipeline, ValueFromPipelineByPropertyName)]
+        [Alias('idReadable')]
+        [Alias('id')]
         [String] $Issue,
 
         # Returns issues in project that match this search query. Sent as the value for the `project:` search clause.
@@ -92,46 +95,49 @@ function Get-YTIssue
         [String[]] $Property
     )
 
-    Set-StrictMode -Version 'Latest'
-    Use-CallerPreference -Cmdlet $PSCmdlet -SessionState $ExecutionContext.SessionState
-
-    if (-not $Property)
+    process
     {
-        $Property = Get-YTEntityField -Type 'Issue' -Depth $script:defaultIssueFieldDepth
-    }
+        Set-StrictMode -Version 'Latest'
+        Use-CallerPreference -Cmdlet $PSCmdlet -SessionState $ExecutionContext.SessionState
 
-    $endpoint = 'issues'
-    if ($Issue)
-    {
-        $endpoint = Protect-YTPath -SafeBasePath $endpoint -UnsafeChildPath $Issue
-    }
-
-    $queryParams = @{}
-    if ($PSCmdlet.ParameterSetName -eq 'Query')
-    {
-        $queryParts = & {
-
-            if ($Project)
-            {
-                "project:${Project}" | Write-Output
-            }
-
-            if ($Summary)
-            {
-                "summary:${Summary}" | Write-Output
-            }
-
-            if( $SubtaskOf)
-            {
-                "subtask of:${SubtaskOf}"
-            }
-        }
-
-        if ($queryParts)
+        if (-not $Property)
         {
-            $queryParams['query'] = $queryParts -join ' '
+            $Property = Get-YTEntityField -Type 'Issue' -Depth $script:defaultIssueFieldDepth
         }
-    }
 
-    Invoke-YTRestMethod -Session $Session -Name $endpoint -Property $Property -QueryParameter $queryParams
+        $endpoint = 'issues'
+        if ($Issue)
+        {
+            $endpoint = Protect-YTPath -SafeBasePath $endpoint -UnsafeChildPath $Issue
+        }
+
+        $queryParams = @{}
+        if ($PSCmdlet.ParameterSetName -eq 'Query')
+        {
+            $queryParts = & {
+
+                if ($Project)
+                {
+                    "project:${Project}" | Write-Output
+                }
+
+                if ($Summary)
+                {
+                    "summary:${Summary}" | Write-Output
+                }
+
+                if( $SubtaskOf)
+                {
+                    "subtask of:${SubtaskOf}"
+                }
+            }
+
+            if ($queryParts)
+            {
+                $queryParams['query'] = $queryParts -join ' '
+            }
+        }
+
+        Invoke-YTRestMethod -Session $Session -Name $endpoint -Property $Property -QueryParameter $queryParams
+    }
 }

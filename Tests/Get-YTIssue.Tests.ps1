@@ -71,22 +71,69 @@ Describe 'Get-YTIssue' {
         $Global:Error.Clear()
     }
 
-    It 'supports issue ID' {
-        WhenGettingIssue -WithArgs @{ Issue = '3-4' }
-        ThenIssueHasValue -Field 'idReadable' -Value 'DEMO-5'
-        ThenIssueHasValue -Field 'id' -Value '3-4'
-        ThenIssueHasValue -Field 'summary' -Value 'First steps for project administrators'
-        # Make sure two level of properties returned
-        $script:result.updater | Should -Not -BeNullOrEmpty
-        $script:result.updater.id | Should -Not -BeNullOrEmpty
-        $script:result.updater | Get-Member 'tags' | Should -BeNullOrEmpty
+    Context 'issue from parameters' {
+        It 'supports issue ID' {
+            WhenGettingIssue -WithArgs @{ Issue = '3-4' }
+            ThenIssueHasValue -Field 'idReadable' -Value 'DEMO-5'
+            ThenIssueHasValue -Field 'id' -Value '3-4'
+            ThenIssueHasValue -Field 'summary' -Value 'First steps for project administrators'
+            # Make sure two level of properties returned
+            $script:result.updater | Should -Not -BeNullOrEmpty
+            $script:result.updater.id | Should -Not -BeNullOrEmpty
+            $script:result.updater | Get-Member 'tags' | Should -BeNullOrEmpty
+        }
+
+        It 'supports issue readable ID' {
+            WhenGettingIssue -WithArgs @{ Issue = 'DEMO-1' }
+            ThenIssueHasValue -Field 'id' -Value '3-0'
+            ThenIssueHasValue -Field 'idReadable' -Value 'DEMO-1'
+            ThenIssueHasValue -Field 'summary' -Value 'Launch YouTrack'
+        }
     }
 
-    It 'supports issue readable ID' {
-        WhenGettingIssue -WithArgs @{ Issue = 'DEMO-1' }
-        ThenIssueHasValue -Field 'id' -Value '3-0'
-        ThenIssueHasValue -Field 'idReadable' -Value 'DEMO-1'
-        ThenIssueHasValue -Field 'summary' -Value 'Launch YouTrack'
+    Context 'issue from pipeline' {
+        BeforeAll {
+            $script:issue1 = Get-YTIssue -Session $script:session -Issue 'DEMO-2'
+            $script:issue2 = Get-YTIssue -Session $script:session -Issue 'DEMO-1'
+        }
+        It 'accepts issue ids' {
+            $issues = $script:issue1.id,$script:issue2.id | Get-YTIssue -Session $script:session
+            $issues | Should -HaveCount 2
+            $issues[0].id | Should -Be $script:issue1.id
+            $issues[1].id | Should -Be $script:issue2.id
+        }
+
+        It 'accepts issue readable ids' {
+            $issues = $script:issue1.idReadable,$script:issue2.idReadable | Get-YTIssue -Session $script:session
+            $issues | Should -HaveCount 2
+            $issues[0].id | Should -Be $script:issue1.id
+            $issues[1].id | Should -Be $script:issue2.id
+        }
+
+        It 'accepts issue objects' {
+            $issues = $script:issue1,$script:issue2 | Get-YTIssue -Session $script:session
+            $issues | Should -HaveCount 2
+            $issues[0].id | Should -Be $script:issue1.id
+            $issues[1].id | Should -Be $script:issue2.id
+        }
+
+        It 'accepts objects with id property' {
+            $issues =
+                $script:issue1,$script:issue2 | Select-Object -Property 'id' | Get-YTIssue -Session $script:session
+            $issues | Should -HaveCount 2
+            $issues[0].id | Should -Be $script:issue1.id
+            $issues[1].id | Should -Be $script:issue2.id
+        }
+
+        It 'accepts objects with idReadable property' {
+            $issues =
+                $script:issue1,$script:issue2 |
+                Select-Object -Property 'idReadable' |
+                Get-YTIssue -Session $script:session
+            $issues | Should -HaveCount 2
+            $issues[0].id | Should -Be $script:issue1.id
+            $issues[1].id | Should -Be $script:issue2.id
+        }
     }
 
     It 'supports custom fields' {

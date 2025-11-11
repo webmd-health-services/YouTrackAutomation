@@ -63,6 +63,7 @@
 * `Get-YTIssueState` function to get an issue's state.
 * `Set-YTIssueState` function to set an issue's state.
 * `Get-YTUser` function to get users.
+* `Get-YTIssue` accepts issue objects, issue IDs, and/or issue readable IDs from the pipeline.
 
 ### Changed
 
