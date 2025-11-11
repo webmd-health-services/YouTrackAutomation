@@ -17,7 +17,8 @@
   return objects with all properties by default, so check the return object as it may have the properties you need. If
   not, use `Get-YTEntityField` function to construct a field list.
 * Rename usages of the `Get-YTIssueCustomField` function's `CustomField` parameter to `Field`.
-* Rename usages of the `Get-YTIssueCustomField` function's `Value` parameter to `ValueOnly`.
+* Rename usages of the `Get-YTIssueCustomField` function's `Value` parameter. Each custom field type has a different
+  notion of what it's value is, so this can't be generalized.
 * Remove usages of the `Get-YTIssueCustomField` function's `IssueID` parameter to `Issue`. It accepts both an issue's
   ID and readable ID.
 * Update usages of `Invoke-YTRestMethod` to no longer pass query strings to the `Name` parameter. Insted, use the new

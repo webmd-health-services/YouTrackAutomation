@@ -27,7 +27,7 @@ Describe 'Get-YTIssueCustomField' {
         $field = Get-YTIssueCustomField -Session $script:session -Issue 'DEMO-1' -Field 'State'
         $field | Should -Not -BeNullOrEmpty
         $field | Should -HaveCount 1
-        $field.value.name | Should -Be 'Fixed'
+        $field.value.id | Should -Be '139-7'
     }
 
     It 'escapes issue' {
@@ -40,10 +40,6 @@ Describe 'Get-YTIssueCustomField' {
         $fields = Get-YTIssueCustomField -Session $script:session -Issue 'DEMO-1' -Field '?fields=id' -ErrorAction SilentlyContinue
         $fields | Should -BeNullOrEmpty
         $Global:Error | Should -Match 'not found'
-    }
-
-    It 'returns just the value' {
-        Get-YTIssueCustomField -Session $script:session -Issue 'DEMO-1' -Field 'State' -ValueOnly | Should -Be 'Fixed'
     }
 
     Context 'piped input' {

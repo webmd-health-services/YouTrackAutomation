@@ -25,11 +25,6 @@ function Get-YTIssueCustomField
     Demonstrates how to get a specific field by passings its ID or name to the `Field` parameter.
 
     .EXAMPLE
-    Get-YTIssueCustomField -Session $session -Issue 'DEMO-20' -Field 'State' -ValueOnly
-
-    Demonstrates how to get just the value of a custom field using the `ValueOnly` switch.
-
-    .EXAMPLE
     Get-YTIssueCustomField -Session $session -Issue 'DEMO-2' -Field 'State' -Type 'StateIssueCustomField'
 
     Demonstrates how to return an object with the properties of the specific field type you want by passing the field's
@@ -51,11 +46,8 @@ function Get-YTIssueCustomField
         [Parameter(Mandatory, ParameterSetName='SpecificField')]
         [String] $Field,
 
-        # Returns only the value of the custom field.
-        [Parameter(ParameterSetName='SpecificField')]
-        [switch] $ValueOnly,
-
-        # The field's type. Controls what properties exist on the returned object.
+        # The field's type, e.g. StateIssueCustomField, SingleEnumIssueCustomField, etc. Controls what properties exist
+        # on the returned object. Required in order to return the field's value.
         [Parameter(ParameterSetName='SpecificField')]
         [String] $Type
     )
@@ -100,13 +92,6 @@ function Get-YTIssueCustomField
             }
         }
 
-        $fields = Invoke-YTRestMethod -Session $session -Name $endpoint -Property $propertyNames
-
-        if ($ValueOnly)
-        {
-            return $fields.value.name
-        }
-
-        return $fields
+        return Invoke-YTRestMethod -Session $session -Name $endpoint -Property $propertyNames
     }
 }
