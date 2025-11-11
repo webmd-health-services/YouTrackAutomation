@@ -74,6 +74,7 @@ function Get-YTIssueCustomField
         }
 
         $isTyped = $true
+
         if (-not $Type)
         {
             $isTyped = $false
@@ -88,7 +89,14 @@ function Get-YTIssueCustomField
         {
             $propertyNames = & {
                 $propertyNames | Where-Object { -not $_.StartsWith('value(') } | Write-Output
-                Get-YTEntityField -Type $Type -Depth 3 | Where-Object { $_.StartsWith('value(') }
+                $depth = 3
+                if ($Type -eq 'SingleUserIssueCustomField')
+                {
+                    # If we go one more level, we return tags with issues, which is... a lot.
+                    $depth = 2
+                }
+
+                Get-YTEntityField -Type $Type -Depth $depth | Where-Object { $_.StartsWith('value(') }
             }
         }
 
