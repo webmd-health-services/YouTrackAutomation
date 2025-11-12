@@ -40,10 +40,8 @@ environment:
     job_group: pwsh
     appveyor_build_worker_image: Visual Studio 2019
 
-
 artifacts:
 - path: .output\*
-
 
 for:
 # Build in Windows PowerShell
@@ -51,17 +49,38 @@ for:
     only:
     - job_group: ps
   build_script:
-  - ps: |
-        $ProgressPreference = 'SilentlyContinue'
-        iwr https://raw.githubusercontent.com/webmd-health-services/Prism/main/Scripts/init.ps1 | iex | Format-Table
-        .\build.ps1
+  - ps: &enable_rdp |
+      if ((Test-Path -Path 'variable:IsWindows') -and -not $IsWindows)
+      {
+        return
+      }
+
+      if ((Test-Path -Path 'env:ENABLE_RDP') -and $env:ENABLE_RDP -eq 'True')
+      {
+        $blockRdp = $false
+        if ((Test-Path -Path 'env:BLOCK_RDP') -and $env:BLOCK_RDP -eq 'True')
+        {
+          $blockRdp = $true
+        }
+        $nonat = $false
+        iex ((new-object net.webclient).DownloadString('https://raw.githubusercontent.com/appveyor/ci/master/scripts/enable-rdp.ps1'))
+      }
+  - ps: &install_youtrack |
+      .\init.ps1
+  - ps: &build_script |
+      $ProgressPreference = 'SilentlyContinue'
+      iwr https://raw.githubusercontent.com/webmd-health-services/Prism/main/Scripts/init.ps1 | iex | Format-Table
+      .\build.ps1
+  on_finish:
+  - ps: *enable_rdp
 
 # Build in PowerShell
 - matrix:
     only:
     - job_group: pwsh
   build_script:
-  - pwsh: |
-        $ProgressPreference = 'SilentlyContinue'
-        iwr https://raw.githubusercontent.com/webmd-health-services/Prism/main/Scripts/init.ps1 | iex | Format-Table
-        ./build.ps1
+  - pwsh: *enable_rdp
+  - pwsh: *install_youtrack
+  - pwsh: *build_script
+  on_finish:
+  - pwsh: *enable_rdp
