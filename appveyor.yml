@@ -12,31 +12,40 @@ test: off
 environment:
   WHISKEY_DISABLE_ERROR_FORMAT: True
   matrix:
-  - job_name: PowerShell 7.2 on Windows
+  - job_name: PowerShell on Windows 2022
     job_group: pwsh
     appveyor_build_worker_image: Visual Studio 2022
 
-  - job_name: PowerShell 7.1 on macOS
+  - job_name: PowerShell on macOS
     job_group: pwsh
     appveyor_build_worker_image: macOS
 
-  - job_name: Windows PowerShell 5.1/.NET 4.6.2
-    job_group: ps
-    appveyor_build_worker_image: Visual Studio 2013
+  # PowerShellGet 2.2.5 downloads its version of NuGet.exe from the internet, and that version was updated to NuGet 7,
+  # which requires .NET standard, so won't run on a server with .NET 4.6.2 installed. Any build that publishes with
+  # PowerShellGet will fail on these servers. This may be a permanent change or maybe it was a mistake. Follow
+  # https://github.com/PowerShell/PSResourceGet/issues/1905 for updates
+  # - job_name: Windows PowerShell 5.1/.NET 4.6.2
+  #   job_group: ps
+  #   appveyor_build_worker_image: Visual Studio 2013
 
-  - job_name: Windows PowerShell 5.1/.NET 4.8
+  - job_name: Windows PowerShell on Windows 2019
     job_group: ps
     appveyor_build_worker_image: Visual Studio 2019
 
-  - job_name: PowerShell 6.2 on Windows
-    job_group: pwsh
-    appveyor_build_worker_image: Visual Studio 2015
+  - job_name: Windows PowerShell on Windows 2022
+    job_group: ps
+    appveyor_build_worker_image: Visual Studio 2022
 
-  - job_name: PowerShell 7.2 on Ubuntu
+  # YouTrack fails to start on this VM.
+  # - job_name: PowerShell 6.2 on Windows
+  #   job_group: pwsh
+  #   appveyor_build_worker_image: Visual Studio 2015
+
+  - job_name: PowerShell on Ubuntu
     job_group: pwsh
     appveyor_build_worker_image: Ubuntu
 
-  - job_name: PowerShell 7.1 on Windows
+  - job_name: PowerShell on Windows 2019
     job_group: pwsh
     appveyor_build_worker_image: Visual Studio 2019
 
@@ -50,6 +59,7 @@ for:
     - job_group: ps
   build_script:
   - ps: &enable_rdp |
+      $PSVersionTable
       if ((Test-Path -Path 'variable:IsWindows') -and -not $IsWindows)
       {
         return
