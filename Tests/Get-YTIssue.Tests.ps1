@@ -7,7 +7,7 @@ BeforeAll {
     Import-Module -Name (Join-Path -Path $PSScriptRoot -ChildPath 'YouTrackAutomationTestHelper' -Resolve)
 
     $script:session = Get-YTTSession
-    $script:project = Initialize-YTTPRoject
+    $script:project = Initialize-YTTProject
 
     function GivenIssue
     {
@@ -73,10 +73,11 @@ Describe 'Get-YTIssue' {
 
     Context 'issue from parameters' {
         It 'supports issue ID' {
-            WhenGettingIssue -WithArgs @{ Issue = '3-4' }
-            ThenIssueHasValue -Field 'idReadable' -Value 'DEMO-5'
-            ThenIssueHasValue -Field 'id' -Value '3-4'
-            ThenIssueHasValue -Field 'summary' -Value 'First steps for project administrators'
+            $issue = GivenIssue -WithSummary 'supports issue ID'
+            WhenGettingIssue -WithArgs @{ Issue = $issue.id }
+            ThenIssueHasValue -Field 'idReadable' -Value $issue.idReadable
+            ThenIssueHasValue -Field 'id' -Value $issue.id
+            ThenIssueHasValue -Field 'summary' -Value $issue.summary
             # Make sure two level of properties returned
             $script:result.updater | Should -Not -BeNullOrEmpty
             $script:result.updater.id | Should -Not -BeNullOrEmpty
@@ -84,17 +85,18 @@ Describe 'Get-YTIssue' {
         }
 
         It 'supports issue readable ID' {
-            WhenGettingIssue -WithArgs @{ Issue = 'DEMO-1' }
-            ThenIssueHasValue -Field 'id' -Value '3-0'
-            ThenIssueHasValue -Field 'idReadable' -Value 'DEMO-1'
-            ThenIssueHasValue -Field 'summary' -Value 'Launch YouTrack'
+            $issue = GivenIssue -WithSummary 'supports issue readable ID'
+            WhenGettingIssue -WithArgs @{ Issue = $issue.idReadable }
+            ThenIssueHasValue -Field 'id' -Value $issue.id
+            ThenIssueHasValue -Field 'idReadable' -Value $issue.idReadable
+            ThenIssueHasValue -Field 'summary' -Value $issue.summary
         }
     }
 
     Context 'issue from pipeline' {
         BeforeAll {
-            $script:issue1 = Get-YTIssue -Session $script:session -Issue 'DEMO-2'
-            $script:issue2 = Get-YTIssue -Session $script:session -Issue 'DEMO-1'
+            $script:issue1 = GivenIssue -WithSummary 'issue from pipeline #1'
+            $script:issue2 = GivenIssue -WithSummary 'issue from pipeline #2'
         }
         It 'accepts issue ids' {
             $issues = $script:issue1.id,$script:issue2.id | Get-YTIssue -Session $script:session
@@ -137,9 +139,10 @@ Describe 'Get-YTIssue' {
     }
 
     It 'supports custom fields' {
-        $fields = 'comments(id,author(name),text,created,updated)'
-        WhenGettingIssue -WithArgs @{ Issue = 'DEMO-1'; Property = $fields }
-        ThenIssueHasField -Field 'comments'
+        $issue = GivenIssue -WithSummary 'supports custom fields'
+        $fields = 'summary'
+        WhenGettingIssue -WithArgs @{ Issue = $issue.idReadable; Property = $fields }
+        ThenIssueHasField -Field 'summary'
         $script:result | Get-Member -Name 'idReadable' | Should -BeNullOrEmpty
     }
 
@@ -151,11 +154,13 @@ Describe 'Get-YTIssue' {
 
     It 'gets all issues in a project' {
         # Make sure there are issues in other projects.
-        $issue = New-YTIssue -Session $script:session -ProjectID $script:project.id -Summary 'At Least One'
+        $otherProject = Initialize-YTTProject -ShortName 'GTYI2'
+        $otherIssue = Initialize-YTTIssue -Project $otherProject.shortName -Summary 'At Least One'
         $allIssues = Get-YTIssue -Session $script:session
-        $projIssues = Get-YTIssue -Session $script:session -Project 'DEMO'
+        $projIssues = Get-YTIssue -Session $script:session -Project $script:project.shortName
+        $projIssues | Where-Object { $_.project.id -ne $script:project.id } | Should -BeNullOrEmpty
         $projIssues.Count | Should -BeLessThan $allIssues.Count
-        $projIssues | Where-Object 'id' -EQ $issue.id | Should -BeNullOrEmpty
+        $projIssues | Where-Object 'id' -EQ $otherIssue.id | Should -BeNullOrEmpty
     }
 
     It 'finds issue by summary' {

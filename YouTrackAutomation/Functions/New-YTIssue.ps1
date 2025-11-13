@@ -69,8 +69,8 @@ function New-YTIssue
         [String] $ProjectID,
 
         # The summary of the issue.
-        [Alias('Title')]
         [Parameter(Mandatory)]
+        [Alias('Title')]
         [String] $Summary,
 
         # The description of the issue.

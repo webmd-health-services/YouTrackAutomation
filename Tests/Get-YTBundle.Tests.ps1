@@ -9,6 +9,8 @@ BeforeAll {
     Import-Module -Name (Join-Path -Path $PSScriptRoot -ChildPath 'YouTrackAutomationTestHelper' -Resolve)
 
     $script:session = Get-YTTSession
+    $script:project = Initialize-YTTProject
+    $script:issue = Initialize-YTTIssue -Project $script:project.shortName -Summary 'Get-YTBundle Test Issue'
 }
 
 Describe 'Get-YTBundle' {
@@ -17,14 +19,13 @@ Describe 'Get-YTBundle' {
     }
 
     It 'gets bundle' {
-        $issue = Get-YTIssue -Session $script:session -Issue 'DEMO-1'
-        $fields = $issue | Get-YTIssueCustomField -Session $script:session
+        $fields = $script:issue | Get-YTIssueCustomField -Session $script:session
 
         $foundOne = $false
         foreach ($field in $fields)
         {
             $typedField = Get-YTIssueCustomField -Session $script:session `
-                                                 -Issue $issue.idReadable `
+                                                 -Issue $script:issue.idReadable `
                                                  -Field $field.name `
                                                  -Type $field.'$type'
             if (-not $typedField.value -or -not ($typedField.value | Get-Member -Name 'bundle'))

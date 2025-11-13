@@ -65,6 +65,36 @@ function Get-YTTSession
     return $script:ytSession
 }
 
+function Initialize-YTTIssue
+{
+    [CmdletBinding()]
+    param(
+        [Parameter(Mandatory)]
+        [String] $Summary,
+
+        [String] $Project
+    )
+
+    $projectEntity = Get-YTProject -Session $script:ytSession -Project $Project
+    if (-not $projectEntity)
+    {
+        Write-Error -Message "Project ""${Project}"" does not exist."
+        return
+    }
+
+    $issue =
+        Get-YTIssue -Session $script:ytSession -Project $projectEntity.shortName -Summary $Summary |
+        Where-Object 'Summary' -EQ $Summary |
+        Select-Object -First 1
+
+    if ($issue)
+    {
+        return $issue
+    }
+
+    return New-YTIssue -Session $script:ytSession -Summary $Summary  -ProjectID $projectEntity.id
+}
+
 function Initialize-YTTProject
 {
     <#
@@ -118,4 +148,4 @@ function Initialize-YTTProject
     return New-YTProject -Session $script:ytSession -Name $Name -ShortName $ShortName -Leader 'admin' -Description $desc
 }
 
-Export-ModuleMember -Function 'Get-YTTSession', 'Initialize-YTTPRoject'
+Export-ModuleMember -Function 'Get-YTTSession', 'Initialize-YTTIssue', 'Initialize-YTTProject'

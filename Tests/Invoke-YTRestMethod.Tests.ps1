@@ -7,6 +7,9 @@ BeforeAll {
     Import-Module -Name (Join-Path -Path $PSScriptRoot -ChildPath 'YouTrackAutomationTestHelper' -Resolve)
 
     $script:session = Get-YTTSession
+    $script:project = Initialize-YTTProject
+    $script:issue = Initialize-YTTIssue -Summary 'Invoke-YTRestMethod test issue' -Project $script:project.shortName
+    $script:issueID = $script:issue.idReadable
 }
 
 Describe 'Invoke-YTRestMethod' {
@@ -24,7 +27,7 @@ Describe 'Invoke-YTRestMethod' {
     }
 
     It 'supports WhatIf' {
-        $project = Get-YTProject -Session $script:session -Project 'DEMO'
+        $project = Get-YTProject -Session $script:session -Project $script:project.shortName
         $desc = 'This is a test ticket.'
         $issue = New-YTIssue -Session $script:session -ProjectID $project.id -Summary 'Test Ticket' -Description $desc
 
@@ -51,13 +54,14 @@ Describe 'Invoke-YTRestMethod' {
     }
 
     It 'adds fields to requests' {
-        $issue = Invoke-YTRestMethod -Session $script:session -Name 'issues/DEMO-1' -Property 'idReadable,project(name)'
+        $resource = "issues/${script:issueID}"
+        $issue = Invoke-YTRestMethod -Session $script:session -Name $resource -Property 'idReadable,project(name)'
         $issue | Should -Not -BeNullOrEmpty
         $issue | Get-Member -Name 'id' | Should -BeNullOrEmpty
-        $issue.idReadable | Should -Be 'DEMO-1'
+        $issue.idReadable | Should -Be $script:issue.idReadable
         $issue.project | Get-Member -Name 'id' | Should -BeNullOrEmpty
         $issue.project | Get-Member -Name 'name' | Should -Not -BeNullOrEmpty
-        $issue.project.name | Should -Be 'Demo project'
+        $issue.project.name | Should -Be $script:project.name
     }
 
     It 'adds fields from body to requests' {
