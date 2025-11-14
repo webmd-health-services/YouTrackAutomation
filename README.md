@@ -137,3 +137,14 @@ will omit a child property if its type is the same as any parent object.
 When using untrusted values in API resource paths, make sure those values get URL-encoded to prevent malicious users
 from changing the URL. Use the [Protect-YTResourcePath](YouTrackAutomation/Functions/Protect-YTResourcePath.ps1)
 function whenever constructing a resource path that contains input from users.
+
+## Using the Hub API
+
+YouTrackAutomation doesn't yet have native support for YouTrack's Hub API, but you can use it by creating a dedicated
+session to the Hub service and using Invoke-YTRestMethod to make requests. When creating the session, pass the Hub
+service URL to the `Url` parameter. When making calls to Hub resources, prepend `rest/` to each resource path:
+
+```powershell
+$hubSession = New-YTSession -Url 'https://youtrack.internetbrands.com/hub/' -ApiToken $apitoken
+Invoke-YTRestMethod -Session $hubSession -Resource 'rest/users'
+```

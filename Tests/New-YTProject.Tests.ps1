@@ -14,6 +14,36 @@ BeforeAll {
         Where-Object 'ShortName' -Like 'NYTP*' |
         Remove-YTProject -Session $script:session
 
+    $login = 'newytproject'
+    # Create a project leader that isn't the current user to test that assigning a custom leader works.
+    $script:leader = Get-YTUser -Session $script:session -User $login -ErrorAction Ignore
+    if (-not $script:leader)
+    {
+        $fields = Get-YTEntityField -Type 'User'
+        # Users can only be created using the Hub API. YouTrackAutomation doesn't have native support for the HUB api,
+        # but we can fake it out.
+        $hubSession = New-YTSession -Url "$($script:session.Url)hub/" -ApiToken $script:session.ApiToken
+        $body = @{
+            login = $login
+        }
+        Invoke-YTRestMethod -Session $hubSession -Resource 'rest/users' -Method Post -Body $body -Property $fields |
+            Out-Null
+
+        # It can take a minute for the user to exist.
+        $timer = [Diagnostics.Stopwatch]::StartNew()
+        do
+        {
+            # Hub API objects and REST API objects can't be intermingled.
+            $script:leader = Get-YTUser -Session $script:session -User $login -ErrorAction Ignore
+            if ($script:leader)
+            {
+                break
+            }
+            Start-Sleep -Seconds 1
+        }
+        while ($timer.Elapsed -lt (New-TimeSpan -Seconds 10))
+    }
+
     function WhenCreatingProject
     {
         [CmdletBinding()]
@@ -24,9 +54,6 @@ BeforeAll {
             [Parameter(Mandatory)]
             [String] $ShortName,
 
-            [Parameter(Mandatory)]
-            [String] $Leader,
-
             [String] $Description,
 
             [String] $Template,
@@ -34,7 +61,8 @@ BeforeAll {
             [String] $AdditionalFields
         )
 
-        $script:result = New-YTProject -Session $session @PSBoundParameters -ErrorAction 'Stop'
+        $script:result =
+            New-YTProject -Session $session @PSBoundParameters -LeaderID $script:leader.id -ErrorAction 'Stop'
     }
 
     function ThenProjectExists
@@ -44,31 +72,28 @@ BeforeAll {
             [String] $ShortName
         )
 
-        Get-YTProject -Session $session -Project $ShortName | Should -Not -BeNullOrEmpty
+        $project = Get-YTProject -Session $session -Project $ShortName
+        $project | Should -Not -BeNullOrEmpty
+        $project.leader.id | Should -Be $script:leader.id
     }
 }
 
 Describe 'New-YTProject' {
     It 'should create a new project' {
-        WhenCreatingProject -Name 'New-YTProject Test1' -ShortName 'NYTP1' -Leader 'admin'
+        WhenCreatingProject -Name 'New-YTProject Test1' -ShortName 'NYTP1'
         ThenProjectExists -ShortName 'NYTP1'
     }
 
     It 'should create a new project with a template' {
-        WhenCreatingProject -Name 'New-YTProject Test2' -ShortName 'NYTP2' -Leader 'admin' -Template 'scrum'
-        WhenCreatingProject -Name 'New-YTProject Test3' -ShortName 'NYTP3' -Leader 'admin' -Template 'kanban'
+        WhenCreatingProject -Name 'New-YTProject Test2' -ShortName 'NYTP2' -Template 'scrum'
+        WhenCreatingProject -Name 'New-YTProject Test3' -ShortName 'NYTP3' -Template 'kanban'
         ThenProjectExists -ShortName 'NYTP2'
         ThenProjectExists -ShortName 'NYTP3'
     }
 
     It 'should fail to make a project with a short name that already exists' {
-        WhenCreatingProject -Name 'New-YTProject Test4' -ShortName 'NYTP4' -Leader 'admin'
+        WhenCreatingProject -Name 'New-YTProject Test4' -ShortName 'NYTP4'
         ThenProjectExists -ShortName 'NYTP4'
-        { WhenCreatingProject -Name 'New-YTProject Test4' -ShortName 'NYTP4' -Leader 'admin' } | Should -Throw '*Project is not unique*'
-    }
-
-    It 'should handle leader by id' {
-        WhenCreatingProject -Name 'New-YTProject Test5' -ShortName 'NYTP5' -Leader '2-1'
-        ThenProjectExists -ShortName 'NYTP5'
+        { WhenCreatingProject -Name 'New-YTProject Test4' -ShortName 'NYTP4' } | Should -Throw '*Project is not unique*'
     }
 }

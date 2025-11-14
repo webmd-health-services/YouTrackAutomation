@@ -30,6 +30,9 @@
 * Rename usages of the `Get-YTProject` function's `ShortName` parameter to `Project`. It now accepts either a project
   short name or a project ID.
 * Rename usages of the `Invoke-YRestMethod` function's `-Name` parameter to `-Resource`.
+* Rename usages of the `New-YTProject` function's `Leader` parameter to `LeaderID` and update usages to pass in the
+  user ID of the project's leader. Passing in the leader's login no longer works. Use `Get-YTUser` to find users by
+  login name and get their user ID.
 
 ### Added
 
@@ -84,6 +87,8 @@
   different paths. In order not to require a different session for each API, the path is no longer allowed and
   YouTrackAutomation manages the path to the correct API.
 * Renamed the `Invoke-YTRestMethod` function's `Name` parameter to `Resource`.
+* Renamed the `New-YTProject` function's `Leader` parameter to `LeaderID` and changed it to only accept user IDs. Update
+  usages accordingly.
 
 ## 1.1.0
 

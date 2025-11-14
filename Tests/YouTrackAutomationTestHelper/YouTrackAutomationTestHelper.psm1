@@ -145,7 +145,13 @@ function Initialize-YTTProject
     }
 
     $desc = "${Name} project."
-    return New-YTProject -Session $script:ytSession -Name $Name -ShortName $ShortName -Leader 'admin' -Description $desc
+
+    $leader = Get-YTUser -Session $script:ytSession -User 'admin'
+    return New-YTProject -Session $script:ytSession `
+                         -Name $Name `
+                         -ShortName $ShortName `
+                         -LeaderID $leader.id `
+                         -Description $desc
 }
 
 Export-ModuleMember -Function 'Get-YTTSession', 'Initialize-YTTIssue', 'Initialize-YTTProject'

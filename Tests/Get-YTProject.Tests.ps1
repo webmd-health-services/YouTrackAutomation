@@ -17,11 +17,12 @@ BeforeAll {
             [String] $Leader = 'admin'
         )
 
+        $user = Get-YTUser -Session $script:session -User $Leader
         $script:projectShortName = $ShortName
         $project = New-YTProject -Session $script:session `
                                  -ShortName $ShortName `
                                  -Name $Name `
-                                 -Leader $Leader `
+                                 -LeaderID $user.id `
                                  -Description 'This is a test project.' `
                                  -ErrorAction Ignore
         if ($project)

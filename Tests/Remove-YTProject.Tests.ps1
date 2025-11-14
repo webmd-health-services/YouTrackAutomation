@@ -10,6 +10,7 @@ BeforeAll {
     $script:session = Get-YTTSession
     $script:project = $null
     $script:nextId = 0
+    $script:admin = Get-YTUser -Session $script:session -User 'admin'
 
     function WhenDeletingProject
     {
@@ -61,7 +62,8 @@ Describe 'Remove-YTProject' {
 
         WRite-Verbose "[${shortName}]  ${name}"
 
-        $script:project = New-YTProject -Session $script:session -Name $name -ShortName $shortName -Leader 'admin'
+        $script:project =
+            New-YTProject -Session $script:session -Name $name -ShortName $shortName -LeaderID $script:admin.id
 
         $Global:Error.Clear()
     }

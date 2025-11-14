@@ -36,14 +36,34 @@ if (-not (Test-Path -Path $outputPath))
     New-Item -Path $outputPath -ItemType Directory | Out-Null
 }
 
+$destinationPath = Join-Path -Path $outputPath -ChildPath 'youtrack'
+
+$batPath = Join-Path -Path $destinationPath -ChildPath 'bin\youtrack.bat'
+if (-not $env:OS)
+{
+    $batPath = Join-Path -Path $destinationPath -ChildPath 'bin\youtrack.sh'
+    $env:JAVA_TOOL_OPTIONS = $null
+}
+
+if ((Test-Path -Path $batPath))
+{
+    Get-Process -Name 'java*'
+    & $batPath status
+    $ytRunning = $LASTEXITCODE -eq 0
+    if ($ytRunning)
+    {
+        Write-Information 'Stopping YouTrack.'
+        & $batPath stop
+    }
+    Get-Process -Name 'java*'
+}
+
 $archivePath = Join-Path -Path $outputPath -ChildPath 'youtrack.zip'
 if ($Force -or -not (Test-Path -Path $archivePath))
 {
     Write-Information 'Downloading YouTrack.'
     Invoke-WebRequest -Uri "https://download-cdn.jetbrains.com/charisma/youtrack-${YouTrackVersion}.zip" -OutFile $archivePath
 }
-
-$destinationPath = Join-Path -Path $outputPath -ChildPath 'youtrack'
 
 if ($Force -and (Test-Path -Path $destinationPath))
 {
@@ -64,23 +84,6 @@ if (-not (Test-Path -Path $destinationPath))
     Move-Item -Path (Join-Path -Path $nestedPath -ChildPath '*') -Destination $destinationPath -Force
     Remove-Item -Recurse -Force -Path $nestedPath
 }
-
-$batPath = Join-Path -Path $destinationPath -ChildPath 'bin\youtrack.bat' -Resolve
-if (-not $env:OS)
-{
-    $batPath = Join-Path -Path $destinationPath -ChildPath 'bin\youtrack.sh' -Resolve
-    $env:JAVA_TOOL_OPTIONS = $null
-}
-
-Get-Process -Name 'java*'
-& $batPath status
-$ytRunning = $LASTEXITCODE -eq 0
-if ($ytRunning)
-{
-    Write-Information 'Stopping YouTrack.'
-    & $batPath stop
-}
-Get-Process -Name 'java*'
 
 if ((Get-Command -Name 'Test-NetConnection' -ErrorAction Ignore))
 {

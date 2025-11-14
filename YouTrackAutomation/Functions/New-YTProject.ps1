@@ -10,16 +10,16 @@ function New-YTProject
 
     * `Name`: The name of the project.
     * `ShortName`: The short name of the project.
-    * `Leader`: The id or the name of the project owner.
+    * `LeaderID`: The user id of the project owner.
 
     .EXAMPLE
-    New-YTProject -Session $session -Name 'Demo Project' -ShortName 'DEMO' -Leader 'admin'
+    New-YTProject -Session $session -Name 'Demo Project' -ShortName 'DEMO' -LeaderID '2-1'
 
     Demonstrates creating a new project in YouTrack with the name `Demo Project`, the short name `DEMO`, and the project
     owner `admin`.
 
     .EXAMPLE
-    New-YTProject -Session $session -Name 'Demo Project' -ShortName 'DEMO' -Leader '2-1'
+    New-YTProject -Session $session -Name 'Demo Project' -ShortName 'DEMO' -LeaderID '2-1'
 
     Demonstrates creating a new project in YouTrack with the name `Demo Project`, the short name `DEMO`, and the project
     owner `admin`, but using the project owner's id instead of their name.
@@ -38,9 +38,9 @@ function New-YTProject
         [Parameter(Mandatory)]
         [String] $ShortName,
 
-        # The id or the name of the project owner.
+        # The user id of the project owner. Use `Get-YTUser` to find users by login to get their IDs.
         [Parameter(Mandatory)]
-        [String] $Leader,
+        [String] $LeaderID,
 
         # The description of the project.
         [String] $Description,
@@ -56,21 +56,11 @@ function New-YTProject
     Set-StrictMode -Version 'Latest'
     Use-CallerPreference -Cmdlet $PSCmdlet -SessionState $ExecutionContext.SessionState
 
-    # TODO: require user to pass ID in or do a query to find user with specific name. Some installations of YouTrack
-    # have thousands of users so this will effectively do nothing.
-    if ($Leader -notmatch '\d+-\d+')
-    {
-        $Leader =
-            Invoke-YTRestMethod -Session $Session -Resource 'users' -Property 'name','id' |
-            Where-Object 'name' -eq $Leader |
-            Select-Object -ExpandProperty 'id'
-    }
-
     $body = @{
         name = $Name;
         shortName = $ShortName;
         leader = @{
-            id = $Leader;
+            id = $LeaderID;
         };
     }
 
