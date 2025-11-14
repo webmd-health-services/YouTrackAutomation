@@ -19,7 +19,7 @@ function Get-YTBundle
     Demonstrates how to get a bundle by passing its ID to the `ID` parameter and its type to the `Type` parameter.
 
     .EXAMPLE
-    (Get-YTIssue -Session $session -ID 'DEMO-2' | Get-YTIssueCustomField -Session $session -Field 'State').value.bundle | Get-YTBundle -Session $session
+    (Get-YTIssueCustomField -Session $session -Issue 'DEMO-1' -Field 'State').value.bundle | Get-YTBundle -Session $session
 
     Demonstrates how to get a bundle from an issue's custom field. In this example, the bundle for the DEMO-2 issue's
     state field is returned.

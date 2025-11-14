@@ -19,7 +19,8 @@ Describe 'Get-YTBundle' {
     }
 
     It 'gets bundle' {
-        $fields = $script:issue | Get-YTIssueCustomField -Session $script:session
+        $fields =
+            $script:issue.customFields | Get-YTIssueCustomField -Session $script:session -Issue $script:issue.idReadable
 
         $foundOne = $false
         foreach ($field in $fields)

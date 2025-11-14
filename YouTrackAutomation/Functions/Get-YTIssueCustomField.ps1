@@ -9,9 +9,14 @@ function Get-YTIssueCustomField
     The `Get-YTIssueCustomField` function gets an issue's custom fields. Pass the issue's ID or readable ID to the
     `Issue` parameter. All the custom fields for that issue are returned along with their ID and name (value).
 
-    To get a specific custom field, pass its name or ID to the `Field` parameter. To get just the field's value, use the
-    `Value` switch. To get a typed object back, (i.e. all the field's properties exist), pass the field's type to the
-    `Type` parameter.
+    To get a specific custom field, pass its name or ID to the `Field` parameter. To get a typed object back, (i.e. all
+    the field's properties exist), pass the field's type to the `Type` parameter.
+
+    You can also pipe custom field objects to `Get-YTIssueCustomField` to get full fields back. So you can do things
+    like:
+
+        $issue = Get-YTIssue -Session $session -Issue 'DEMO-4'
+        $issue.customFields | Get-YTIssueCustomField -Session $session -Issue $issue.idReadable
 
     .EXAMPLE
     Get-YTIssueCustomField -Session $session -Issue 'DEMO-4'
@@ -36,30 +41,36 @@ function Get-YTIssueCustomField
         [Parameter(Mandatory)]
         [Object] $Session,
 
-        # The ID of the issue.
-        [Parameter(Mandatory, ValueFromPipeline, ValueFromPipelineByPropertyName)]
-        [Alias('id')]
-        [Alias('idReadable')]
+        # The ID or readable ID of the issue.
+        [Parameter(Mandatory)]
         [String] $Issue,
 
-        # The name or ID of the specific custom field to get. Default is to return all the issue's custom fields.
-        [Parameter(Mandatory, ParameterSetName='SpecificField')]
+        # The name or ID of the specific custom field to get. Default is to return all the issue's custom fields. You
+        # can pipe field objects, IDs, or names as well. When you pipe objects, `Get-YTIssueCustomField` detects the
+        # field's types and returns all object properties.
+        [Parameter(Mandatory, ValueFromPipeline, ValueFromPipelineByPropertyName, ParameterSetName='SpecificField')]
+        [Alias('id')]
+        [Alias('name')]
         [String] $Field,
 
         # The field's type, e.g. StateIssueCustomField, SingleEnumIssueCustomField, etc. Controls what properties exist
         # on the returned object. Required in order to return the field's value.
-        [Parameter(ParameterSetName='SpecificField')]
+        [Parameter(ParameterSetName='SpecificField', ValueFromPipelineByPropertyName)]
+        [Alias('$type')]
         [String] $Type
     )
 
-    process
+    begin
     {
         Set-StrictMode -Version 'Latest'
         Use-CallerPreference -Cmdlet $PSCmdlet -SessionState $ExecutionContext.SessionState
 
         $baseResource = Protect-YTResourcePath -SafeBasePath 'issues' -UnsafeChildPath $Issue
         $resource = "${baseResource}/customFields"
+    }
 
+    process
+    {
         if ($Field)
         {
             $resource = Protect-YTResourcePath -SafeBasePath "${baseResource}/fields" -UnsafeChildPath $Field
@@ -84,7 +95,7 @@ function Get-YTIssueCustomField
                 $depth = 3
                 if ($Type -eq 'SingleUserIssueCustomField')
                 {
-                    # If we go one more level, we return tags with issues, which is... a lot.
+                    # If we go one more level, we return tags and saved queries, which is... a lot.
                     $depth = 2
                 }
 

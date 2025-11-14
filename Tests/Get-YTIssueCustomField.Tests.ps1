@@ -50,33 +50,40 @@ Describe 'Get-YTIssueCustomField' {
     }
 
     Context 'piped input' {
-        It 'accepts issue id' {
-            (Get-YTIssue -Session $script:session -Issue $script:issueID).id |
-                Get-YTIssueCustomField -Session $script:session |
+        It 'accepts field id' {
+            $script:issue.customFields |
+                Select-Object -ExpandProperty 'id' |
+                Get-YTIssueCustomField -Session $script:session -Issue $script:issueID |
                 Should -Not -BeNullOrEmpty
         }
 
-        It 'accepts issue readable id' {
-            $script:issueID | Get-YTIssueCustomField -Session $script:session | Should -Not -BeNullOrEmpty
-        }
-
-        It 'accepts object' {
-            Get-YTIssue -Session $script:session -Issue $script:issueID |
-                Get-YTIssueCustomField -Session $script:session |
+        It 'accepts field name' {
+            $script:issue.customFields |
+                Select-Object -ExpandProperty 'name' |
+                Get-YTIssueCustomField -Session $script:session -Issue $script:issueID |
                 Should -Not -BeNullOrEmpty
         }
 
-        It 'accepts object with id' {
-            Get-YTIssue -Session $script:session -Issue $script:issueID |
+        It 'accepts field object' {
+            $fields =
+                $script:issue.customFields |
+                Get-YTIssueCustomField -Session $script:session -Issue $script:issueID
+            $fields | Should -Not -BeNullOrEmpty
+            # Test that fields are typed by grabbing a field that has a unique property.
+            ($fields | Where-Object 'name' -EQ 'State').value | Get-Member -Name 'isResolved' | Should -Not -BeNullOrEmpty
+        }
+
+        It 'accepts field object with only id property' {
+            $script:issue.customFields |
                 Select-Object -Property 'id' |
-                Get-YTIssueCustomField -Session $script:session |
+                Get-YTIssueCustomField -Session $script:session -Issue $script:issueID |
                 Should -Not -BeNullOrEmpty
         }
 
-        It 'accepts object with readable id' {
-            Get-YTIssue -Session $script:session -Issue $script:issueID |
-                Select-Object -Property 'idReadable' |
-                Get-YTIssueCustomField -Session $script:session |
+        It 'accepts field object with only name' {
+            $script:issue.customFields |
+                Select-Object -Property 'name' |
+                Get-YTIssueCustomField -Session $script:session -Issue $script:issueID |
                 Should -Not -BeNullOrEmpty
         }
     }

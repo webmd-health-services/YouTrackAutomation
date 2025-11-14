@@ -1,6 +1,6 @@
 # Overview
 
-The "YouTrackAutomation" module is a PowerShell module built to interface with the YouTrack REST API.
+YouTrackAutomation is a PowerShell module that interacts with the YouTrack REST API.
 
 # System Requirements
 
@@ -23,9 +23,9 @@ Save-Module -Name 'YouTrackAutomation' -Path '.'
 Import-Module -Name '.\YouTrackAutomation'
 ```
 
-# How-to
+# Getting Started
 
-## Creating a new session
+## Create Session
 
 Create a session to the instance of YouTrack you want to connect to with `New-YTSession`. Pass the base URL (i.e. no
 path) to the `Url` parametter. Pass the API key to use to the `ApiKey` parameter or a credential to the `Credential`
@@ -41,7 +41,7 @@ $session = New-YTSession -Url 'https://youtrack.example.com' -Credential $creden
 
 Be careful using a credential. Your username and password are sent to YouTrack in the clear.
 
-## Making Requests
+## Make Requests
 
 Use `Invoke-YTRestMethod` to make requests. Pass the path to the resource to the `Resource` parameter.
 `Invoke-YTRestMethod` adds the REST API base path, `/api/`, to the request.
@@ -138,7 +138,9 @@ When using untrusted values in API resource paths, make sure those values get UR
 from changing the URL. Use the [Protect-YTResourcePath](YouTrackAutomation/Functions/Protect-YTResourcePath.ps1)
 function whenever constructing a resource path that contains input from users.
 
-## Using the Hub API
+# How-to
+
+## Connect to the Hub API
 
 YouTrackAutomation doesn't yet have native support for YouTrack's Hub API, but you can use it by creating a dedicated
 session to the Hub service and using Invoke-YTRestMethod to make requests. When creating the session, pass the Hub
@@ -147,4 +149,24 @@ service URL to the `Url` parameter. When making calls to Hub resources, prepend 
 ```powershell
 $hubSession = New-YTSession -Url 'https://youtrack.internetbrands.com/hub/' -ApiToken $apitoken
 Invoke-YTRestMethod -Session $hubSession -Resource 'rest/users'
+```
+
+## Get Issue Custom Field Values
+
+```powershell
+$issue = Get-YTIssue -Session $session -Issue 'DEMO-1'
+$issue.customFields | Get-YTIssueCustomField -Session $session -Issue $issue.idReadable
+```
+
+## Get Bundle Values for an Issue's Custom Field
+
+```powershell
+$issue = Get-YTIssue -Session $session -Issue 'DEMO-1'
+$issue.customFields |
+  Where-Object 'Name' -EQ 'Priority' |
+  Get-YTIssueCustomField -Session $session -Issue $issue.idReadable |
+  Select-Object -ExpandProperty 'value' |
+  Select-Object -ExpandProperty 'bundle' |
+  Get-YTBundle -Session $session |
+  Select-Object -ExpandProperty 'values'
 ```

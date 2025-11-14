@@ -330,7 +330,7 @@ $script:entityAttributes = @{
         'emptyTextField',
         'ordinal',
         'isPublic',
-        'hasRuningJob',
+        'hasRunningJob',
         @{ Name = 'condition' ; Type = 'CustomFieldCondition' }
     );
     ProjectTeam = @(

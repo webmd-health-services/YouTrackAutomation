@@ -42,7 +42,6 @@
 * `Depth` parameter to `Get-YIssue`, which controls how many levels of object properties/values to return on requested
   issue.
 * `Get-YTIssue` returns all an issue's properties two levels deep.
-* `Get-YTIssueCustomField` returns all an issue's custom field properties two levels deep.
 * `Property` parameter to `Invoke-YTRestMethod`, which control what properties are returned by the API (i.e. it is used
   as the value for the `fields` query string parameter).
 * `QueryParameter` parameter to pass arbitrary query string parameters on the request.
@@ -62,7 +61,8 @@
 * Function `Protect-YTResourcePath` for creating a URL-safe paths to a YouTrack API resources when using input that come
   from users.
 * Function `Get-YTBundle` for getting a YouTrack bundle.
-* Pipe issue objects, issue IDs, or issue readable IDs to `Get-YTIssueCustomField`.
+* Pipe field objects, field IDs, or field names to `Get-YTIssueCustomField`. When piping field objects, returns full
+  field properties for fields of that type.
 * `Get-YTIssueCustomField` returns all object properties on custom field when given custom field type.
 * `New-YTIssue` sets custom fields on issue creation. Pass custom fields to new `CustomField` parameter.
 * `Get-YTIssueState` function to get an issue's state.

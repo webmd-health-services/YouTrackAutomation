@@ -75,8 +75,10 @@ BeforeAll {
         {
             foreach ($expectedFieldName in $HasCustomFields.Keys)
             {
-                $expectedField = $script:result.customFields | Where-Object 'name' -eq $expectedFieldName
-                $actualField = $script:result | Get-YTIssueCustomField -Session $script:session -Field $expectedFieldName -Type $expectedField.'$type'
+                $actualField =
+                    $script:result.customFields |
+                    Where-Object 'name' -eq $expectedFieldName |
+                    Get-YTIssueCustomField -Session $script:session -Issue $script:result.idReadable
                 $actualField | Should -Not -BeNullOrEmpty
                 $actualField.name | Should -Be $expectedFieldName
                 if ($actualField.'$type' -eq 'SingleUserIssueCustomField')
