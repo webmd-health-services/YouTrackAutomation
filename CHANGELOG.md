@@ -12,83 +12,81 @@
   * `Get-YTIssue`
   * `Get-YTProject`
   * `New-YTProject`
-* Update usages of the `Property` (nee `AdditionalField`) parameter on `Get-YTIssue`, `Get-YTProject`, and
+* Update usages of the `Property` (née `AdditionalField`) parameter on `Get-YTIssue`, `Get-YTProject`, and
   `New-YTPRoject` to include the exact list of all fields to return. Only fields in the list are returned. Functions now
-  return objects with all properties by default, so check the return object as it may have the properties you need. If
-  not, use `Get-YTEntityField` function to construct a field list.
+  return objects with all properties by default, so check the return object as it may now have the properties you need.
+  If not, use `Get-YTEntityField` function to construct a field list.
 * Rename usages of the `Get-YTIssueCustomField` function's `CustomField` parameter to `Field`.
-* Rename usages of the `Get-YTIssueCustomField` function's `Value` parameter. Each custom field type has a different
+* Remove usages of the `Get-YTIssueCustomField` function's `Value` parameter. Each custom field type has a different
   notion of what it's value is, so this can't be generalized.
-* Remove usages of the `Get-YTIssueCustomField` function's `IssueID` parameter to `Issue`. It accepts both an issue's
+* Rename usages of the `Get-YTIssueCustomField` function's `IssueID` parameter to `Issue`. It accepts both an issue's
   ID and readable ID.
-* Update usages of `Invoke-YTRestMethod` to no longer pass query strings to the `Name` parameter. Insted, use the new
-  `Property` parameter to pass the fields you want returned, the `Top` parameter to control how many results to return,
-  and `QueryParameter` to pass arbitrary query string parameters.
+* Rename usages of the `Invoke-YRestMethod` function's `-Name` parameter to `-Resource`.
+* Update usages of `Invoke-YTRestMethod` to no longer pass query strings to the `Name`/`Resource` parameter. Insted, use
+  the new `Property` parameter to pass the fields you want returned, the `Top` parameter to control how many results to
+  return, and `QueryParameter` to pass arbitrary query string parameters.
 * Rename usages of the `New-YTIssue` function's `Project` parameter to `ProjectID`. Update usages to pass in the project
-  ID or short name instead of a project object.
+  ID instead of a project object.
 * Remove usages of `Resolve-YTIssueCustomFields` and `Resolve-YTProjectId`.
 * Rename usages of the `Get-YTProject` function's `ShortName` parameter to `Project`. It now accepts either a project
   short name or a project ID.
-* Rename usages of the `Invoke-YRestMethod` function's `-Name` parameter to `-Resource`.
 * Rename usages of the `New-YTProject` function's `Leader` parameter to `LeaderID` and update usages to pass in the
   user ID of the project's leader. Passing in the leader's login no longer works. Use `Get-YTUser` to find users by
   login name and get their user ID.
 
 ### Added
 
-* Created `Get-YTEntityField` function to get the complete list of fields for a specific YouTrack entity, suitable for
-  passing to YouTrack as the value for the `fields` query string parameter. Also optionally gets fields for nested
-  objects up to five levels deep.
-* `Depth` parameter to `Get-YIssue`, which controls how many levels of object properties/values to return on requested
-  issue.
-* `Get-YTIssue` returns all an issue's properties two levels deep.
-* `Property` parameter to `Invoke-YTRestMethod`, which control what properties are returned by the API (i.e. it is used
-  as the value for the `fields` query string parameter).
-* `QueryParameter` parameter to pass arbitrary query string parameters on the request.
-* `Top` parameter, to control how many results are returned by the API.
-* Added verbose messages to `Invoke-YTRestMethod` that show the request being made to the API.
+* `Invoke-YTRestMethod`:
+  * `Property` parameter, which controls what properties are returned by the API (i.e. it is used as the value for the `fields` query string parameter).
+  * `QueryParameter` parameter to pass arbitrary query string parameters on the request.
+  * `Top` parameter, to control how many results are returned by the API.
+  * Verbose messages that show the request being made to the API.
 * `Remove-YTProject`: accept project objects, project IDs, or project short names from the pipeline.
-* Function `Invoke-YTCommand` for working with the `commands` resource.
-* `New-YTIssue` can now also link new issues as subtasks of a parent issue. Pass the parent issue ID or readable ID to
-  the new `Parent` parameter.
-* `Remove-YTProject`: accept project objects, project IDs, or project short names from the pipeline.
+* `New-YTIssue`:
+  * `Parent` parameter for setting the new issue's parent. Pass the parent issue ID or readable ID.
+  * `CustomField` parameter for setting custom fields when creating an issue.
+* `Get-YTIssue`:
+  * returns all an issue's properties two levels deep.
+  * parameter `Project`, for getting issues in a specific project.
+  * parameter `Summary`, for getting issues whose summary conatains a search string.
+  * parameter `SubtaskOf`, for getting issues that are subtasks of a parent issue.
+  * accepts issue objects, issue IDs, and/or issue readable IDs from the pipeline.
 * Connect using a credential (username/password) in addition to an API key. Pass the credential instead of the API key
   to the `New-YTSession` function.
-* `Get-YTIssue` parameters that search for issues:
-  * `Project` searches for issues in a specific project.
-  * `Summary` searches for issues whose summary matches a search string.
-  * `SubtaskOf` searches for issues that are subtasks of a parent issue.
-* Function `Protect-YTResourcePath` for creating a URL-safe paths to a YouTrack API resources when using input that come
-  from users.
-* Function `Get-YTBundle` for getting a YouTrack bundle.
-* Pipe field objects, field IDs, or field names to `Get-YTIssueCustomField`. When piping field objects, returns full
-  field properties for fields of that type.
-* `Get-YTIssueCustomField` returns all object properties on custom field when given custom field type.
-* `New-YTIssue` sets custom fields on issue creation. Pass custom fields to new `CustomField` parameter.
-* `Get-YTIssueState` function to get an issue's state.
-* `Set-YTIssueState` function to set an issue's state.
-* `Get-YTUser` function to get users.
-* `Get-YTIssue` accepts issue objects, issue IDs, and/or issue readable IDs from the pipeline.
+* `Get-YTIssueCustomField`:
+  * Accepts field objects, field IDs, or field names from the pipeline. When piping field objects, returns full field
+    properties.
+  * returns all object properties on custom field when given custom field type.
+* New Functions:
+  * `Get-YTEntityField`for getting complete field lists for YouTrack entity, suitable for passing to YouTrack as the
+    value for the `fields` query string parameter. Returns fields list for nested objects, too.
+  * `Invoke-YTCommand` for calling the `commands` resource.
+  * `Get-YTIssueState` function to get an issue's state.
+  * `Set-YTIssueState` function to set an issue's state.
+  * `Get-YTUser` function to get users.
+  * `Protect-YTResourcePath` for creating a URL-safe paths to a YouTrack API resources when using input that come from
+    users.
+  * `Get-YTBundle` for getting bundles.
 
 ### Changed
 
-* The `Get-YTIssue` function's `IssueId` parameter renamed to `ID`.
-* The `Get-YTIssue` function only returns two levels of object property values. It no longer returns
-  `attachments.author.name`.
-* `Get-YTIssueCustomField` returns all an issue's fields by default.
-* Renamed the `Get-YTIssueCustomField` function's `CustomField` parameter to `Field`.
+* `Get-YTIssue`:
+  * renamed `IssueId` parameter renamed to `ID`.
+  * only returns two levels of object property values. It no longer returns `attachments.author.name`.
+* `Get-YTIssueCustomField`: renamed the`CustomField` parameter to `Field`.
 * Renamed the `AdditionalFields` parameter to `Property` on `Get-YTIssue`, `Get-YTProject`, and `New-YTProject` and
   changed the behavior to only return the fields passed in.
 * `New-YTIssue` returns all object properties on the new issue, two levels deep.
-* `New-YTProject` returns all object properteis on the new project.
+* `New-YTProject` returns all object properties on the new project.
 * Renamed the `Get-YTProject` function's `ShortName` parameter to `Project`. It now accepts either a project short name
   or project ID.
-* `New-YTSession` writes an error if the URL to YouTrack includes a path. There are multiple YouTrack REST APIs with
-  different paths. In order not to require a different session for each API, the path is no longer allowed and
-  YouTrackAutomation manages the path to the correct API.
 * Renamed the `Invoke-YTRestMethod` function's `Name` parameter to `Resource`.
 * Renamed the `New-YTProject` function's `Leader` parameter to `LeaderID` and changed it to only accept user IDs. Update
   usages accordingly.
+
+### Removed
+
+* `Get-YTIssueCustomField`: `Value` switch. There is no common way to get a value from all the different custom fields.
 
 ## 1.1.0
 
