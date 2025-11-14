@@ -105,10 +105,10 @@ function Get-YTIssue
             $Property = Get-YTEntityField -Type 'Issue' -Depth $script:defaultIssueFieldDepth
         }
 
-        $endpoint = 'issues'
+        $resource = 'issues'
         if ($Issue)
         {
-            $endpoint = Protect-YTPath -SafeBasePath $endpoint -UnsafeChildPath $Issue
+            $resource = Protect-YTResourcePath -SafeBasePath $resource -UnsafeChildPath $Issue
         }
 
         $queryParams = @{}
@@ -138,6 +138,6 @@ function Get-YTIssue
             }
         }
 
-        Invoke-YTRestMethod -Session $Session -Name $endpoint -Property $Property -QueryParameter $queryParams
+        Invoke-YTRestMethod -Session $Session -Resource $resource -Property $Property -QueryParameter $queryParams
     }
 }

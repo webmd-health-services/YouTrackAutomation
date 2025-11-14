@@ -10,7 +10,7 @@ function Get-YTBundle
     type to the `Type` parameter. The function returns the bundle.
 
     To get a bundle ID and type from an issue, use `Get-YTIssueCustomField` for the specific field. The return object
-    will a `value.bundle` property. You can pipe the `value.bundle` object to this function, or pass the
+    will have a `value.bundle` property. You can pipe the `value.bundle` object to this function, or pass the
     `value.bundle.id` property to the `ID` parameter, and the `value.bundle.'$type'` property to the `Type` parameter.
 
     .EXAMPLE
@@ -45,9 +45,9 @@ function Get-YTBundle
         Set-StrictMode -Version 'Latest'
         Use-CallerPreference -Cmdlet $PSCmdlet -SessionState $ExecutionContext.SessionState
 
-        $typeEndpointName = $Type.ToLowerInvariant() -replace 'bundle$', ''
-        $endpoint =
-            Protect-YTPath -SafeBasePath 'admin/customFieldSettings/bundles' -UnsafeChildPath $TypeEndpointName,$ID
+        $typeResourceName = $Type.ToLowerInvariant() -replace 'bundle$', ''
+        $resource =
+            Protect-YTResourcePath -SafeBasePath 'admin/customFieldSettings/bundles' -UnsafeChildPath $typeResourceName,$ID
 
         $fields = Get-YTEntityField -Type $Type -Depth 2
         if (-not $fields)
@@ -55,7 +55,7 @@ function Get-YTBundle
             $fields = Get-YTEntityField -Type 'Bundle' -Depth 2
         }
 
-        Invoke-YTRestMethod -Session $Session -Name $endpoint -Property $fields
+        Invoke-YTRestMethod -Session $Session -Resource $resource -Property $fields
     }
 
 }

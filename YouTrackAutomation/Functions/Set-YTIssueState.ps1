@@ -137,8 +137,8 @@ function Set-YTIssueState
             Write-Error -Message $msg -ErrorAction $ErrorActionPreference
         }
 
-        $endpoint = Protect-YTPath -SafeBasePath 'issues' -UnsafeChildPath $Issue,'fields',$stateField.name
+        $resource = Protect-YTResourcePath -SafeBasePath 'issues' -UnsafeChildPath $Issue,'fields',$stateField.name
 
-        Invoke-YTRestMethod -Session $Session -Name $endpoint -Body $setStateBody -Method Post
+        Invoke-YTRestMethod -Session $Session -Resource $resource -Body $setStateBody -Method Post
     }
 }

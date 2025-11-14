@@ -43,10 +43,11 @@ Be careful using a credential. Your username and password are sent to YouTrack i
 
 ## Making Requests
 
-Use `Invoke-YTRestMethod` to make requests. Pass the path to the resource/endpoint to the `Name` parameter.
+Use `Invoke-YTRestMethod` to make requests. Pass the path to the resource to the `Resource` parameter.
 `Invoke-YTRestMethod` adds the REST API base path, `/api/`, to the request.
+
 ```powershell
-Invoke-YTRestMethod -Session $session -Name 'users/me'
+Invoke-YTRestMethod -Session $session -Resource 'users/me'
 ```
 
 If you need to create something, use the `Method` parameter to change the method, and pass the body of the request as
@@ -58,7 +59,7 @@ $issue = @{
   project = @{
     id = 'EXAMPLE'
   }
-  Invoke-YTRestMethod -Session $session -Name 'issues' -Method Post -Body $body
+  Invoke-YTRestMethod -Session $session -Resource 'issues' -Method Post -Body $body
 }
 ```
 
@@ -103,7 +104,7 @@ that will create a fields list for you. Pass it the entity type name:
 $properties = Get-YTEntityField -Type 'User'
 # The above command returns this fields list as a PowerShell array:
 #   id,login,fullName,email,ringId,guest,online,banned,avatarUrl,userProfiles(id)
-Invoke-YTRestMethod -Session $session -Name 'users/me' -Property $properties
+Invoke-YTRestMethod -Session $session -Resource 'users/me' -Property $properties
 ```
 By default, it returns a fields list that will return all that entity's properties/attributes/fields, with the following
 caveats:
@@ -122,7 +123,7 @@ $properties = Get-YTEntityField -Type 'User' -Depth 2
 #   tags(id,color(id),untagOnResolve,visibleFor(id),updateableBy(id),readShareSettings(id),tagSharingSettings(id),updateSharingSettings(id),owner(id),name),
 #   savedQueries(id,query,visibleFor(id),updateableBy(id),readSharingSetings(id),updateSharingSettings(id),owner(id),name),
 #   avatarUrl,userProfiles(id,general(id),notifications(id),timeTracking(id))
-Invoke-YTRestMethod -Session $session -Name 'users/me' -Property $properties
+Invoke-YTRestMethod -Session $session -Resource 'users/me' -Property $properties
 ```
 
 When requesting multiple levels of objects, the bottom-level objects will not have array properties, and their object
@@ -131,8 +132,8 @@ will omit a child property if its type is the same as any parent object.
 
 [The Get-YTEntityField documentation has more details.](YouTrackAutomation/Functions/Get-YTEntityField.ps1)
 
-## URL Encoding API Resource/Endpoint Paths
+## URL Encoding API Resource Paths
 
-When using untrusted values in API resource/endpoint paths, make sure those values get URL-encoded to prevent malicious
-users from changing the URL to an endpoint. Use the [Protect-YTPath](YouTrackAutomation/Functions/Protect-YTPath.ps1)
-function whenever constructing a resource path with input from users.
+When using untrusted values in API resource paths, make sure those values get URL-encoded to prevent malicious users
+from changing the URL. Use the [Protect-YTResourcePath](YouTrackAutomation/Functions/Protect-YTResourcePath.ps1)
+function whenever constructing a resource path that contains input from users.

@@ -3,11 +3,11 @@ function Invoke-YTCommand
 {
     <#
     .SYNOPSIS
-    Calls the YouTrack REST API's /command endpoint.
+    Calls the `command` REST API resource.
 
     .DESCRIPTION
     The `Invoke-YTCommand` function calls the YouTrack REST API's [command
-    endpoint](https://www.jetbrains.com/help/youtrack/devportal/resource-api-commands.html). Pass the query to execute
+    resource](https://www.jetbrains.com/help/youtrack/devportal/resource-api-commands.html). Pass the query to execute
     to the `Query` parameter. Pass a list of issue IDs or readable IDs to the `Issue` parameter.  You can also pipe the
     IDs and readable IDs, or you can pipe in issue objects to the function (objects must have an `id` or `idReadable`
     property). When piping or passing multiple issues, the fuction only makes one request to the API.
@@ -68,7 +68,7 @@ function Invoke-YTCommand
             'issues' = $issues.ToArray();
         }
 
-        Invoke-YTRestMethod -Session $Session -Name 'commands' -Body $body -Method Post |
+        Invoke-YTRestMethod -Session $Session -Resource 'commands' -Body $body -Method Post |
             ConvertTo-Json -Depth 50 |
             Write-Verbose
     }

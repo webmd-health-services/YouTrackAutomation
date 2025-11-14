@@ -18,10 +18,10 @@ Describe 'Invoke-YTRestMethod' {
     }
 
     It 'makes GET requests by default' {
-        $res = Invoke-YTRestMethod -Session $script:session -Name 'users/me' -Method Get
+        $res = Invoke-YTRestMethod -Session $script:session -Resource 'users/me' -Method Get
         $res.id | Should -Not -BeNullOrEmpty
         $res.'$type' | Should -Be 'Me'
-        $res = Invoke-YTRestMethod -Session $script:session -Name 'users/me' -Method Get -WhatIf
+        $res = Invoke-YTRestMethod -Session $script:session -Resource 'users/me' -Method Get -WhatIf
         $res.id | Should -Not -BeNullOrEmpty
         $res.'$type' | Should -Be 'Me'
     }
@@ -33,7 +33,7 @@ Describe 'Invoke-YTRestMethod' {
 
         # Should update issue summary
         $res = Invoke-YTRestMethod -Session $script:session `
-                                   -Name "issues/$($issue.id)" `
+                                   -Resource "issues/$($issue.id)" `
                                    -Body @{ summary = 'New Title' } `
                                    -Method Post `
                                    -Property 'id'
@@ -43,19 +43,19 @@ Describe 'Invoke-YTRestMethod' {
         $issue.summary | Should -Be "New Title"
 
         # Should not update issue summary
-        Invoke-YTRestMethod -Session $script:session -Name "issues/$($issue.id)" -Body @{summary = "Another Title"} -Method Post -WhatIf
+        Invoke-YTRestMethod -Session $script:session -Resource "issues/$($issue.id)" -Body @{summary = "Another Title"} -Method Post -WhatIf
         $issue = Get-YTIssue -Session $script:session -Issue $issue.id -Property 'summary'
         $issue.summary | Should -Be "New Title"
     }
 
     It 'gets projects' {
-        $project = Invoke-YTRestMethod -Session $script:session -Name 'admin/projects?fields=id,name,shortName'
+        $project = Invoke-YTRestMethod -Session $script:session -Resource 'admin/projects?fields=id,name,shortName'
         $project | Should -Not -BeNullOrEmpty
     }
 
     It 'adds fields to requests' {
         $resource = "issues/${script:issueID}"
-        $issue = Invoke-YTRestMethod -Session $script:session -Name $resource -Property 'idReadable,project(name)'
+        $issue = Invoke-YTRestMethod -Session $script:session -Resource $resource -Property 'idReadable,project(name)'
         $issue | Should -Not -BeNullOrEmpty
         $issue | Get-Member -Name 'id' | Should -BeNullOrEmpty
         $issue.idReadable | Should -Be $script:issue.idReadable
@@ -66,7 +66,7 @@ Describe 'Invoke-YTRestMethod' {
 
     It 'adds fields from body to requests' {
         $issue = Invoke-YTRestMethod -Session $script:session `
-                                     -Name 'issues' `
+                                     -Resource 'issues' `
                                      -Method Post `
                                      -Body @{ summary = 'Test Issue'; project = @{ id = '0-0' } } `
                                      -Property 'id,idReadable,project(name)'
@@ -80,16 +80,16 @@ Describe 'Invoke-YTRestMethod' {
     }
 
     It 'controls how many results to return' {
-        $issues = Invoke-YTRestMethod -Session $script:session -Name 'issues'
+        $issues = Invoke-YTRestMethod -Session $script:session -Resource 'issues'
         $issues | Should -Not -BeNullOrEmpty
         ($issues | Measure-Object).Count | Should -BeGreaterThan 1
-        Invoke-YTRestMethod -Session $script:session -Name 'issues' -Top 1 -Property 'id','idReadable' |
+        Invoke-YTRestMethod -Session $script:session -Resource 'issues' -Top 1 -Property 'id','idReadable' |
             Should -HaveCount 1
     }
 
     It 'supports custom query parameters' {
         $queryParams = @{ 'fields' = 'id,idReadable'; '$top' = 1; }
-        $issues = Invoke-YTRestMethod -Session $script:session -Name 'issues' -QueryParameter $queryParams
+        $issues = Invoke-YTRestMethod -Session $script:session -Resource 'issues' -QueryParameter $queryParams
         $issues | Should -Not -BeNullOrEmpty
         $issues | Should -HaveCount 1
         $issues | Get-Member 'idReadable' | Should -Not -BeNullOrEmpty
@@ -101,7 +101,7 @@ Describe 'Invoke-YTRestMethod' {
         $admin = [pscredential]::New('admin', $password)
         $session = New-YTSession -Url $script:session.Url -Credential $admin
         $session | Should -Not -BeNullOrEmpty
-        $me = Invoke-YTRestMethod -Session $session -Name 'users/me' -Property (Get-YTEntityField -Type 'User')
+        $me = Invoke-YTRestMethod -Session $session -Resource 'users/me' -Property (Get-YTEntityField -Type 'User')
         $me | Should -Not -BeNullOrEmpty
         $me.fullName | Should -Be $admin.UserName
     }

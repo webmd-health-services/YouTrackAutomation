@@ -11,8 +11,8 @@ function Get-YTEntityField
     `id` property is returned. If an entity has fields whose values are arrays, those properties are omitted as an
     optimization: when requesting a field that is an array, YouTrack reads all the array's elements.
 
-    The field list can be sent to any API endpoint's `fields` query parameter, by joining the fields list with a `,`
-    character:
+    The field list can be sent to any API resource as the value of the `fields` query parameter, by joining the fields
+    list with a `,` character:
 
         $fields = Get-YTEntityField -Type 'User'
         $resourcePath = "users/me?fields=$([Uri]::EscapeDataString($fields -join ','))"
@@ -22,7 +22,7 @@ function Get-YTEntityField
 
         $fields = Get-YTEntityField -Type 'Issue'
         Get-YTIssue -Session $session -Issue 'DEMO-4' -Property $fields
-        Invoke-YTRestMethod -Session $session -Name 'resource/endpoint' -Property $fields
+        Invoke-YTRestMethod -Session $session -Resource 'resource' -Property $fields
 
     If you want nested object properties and arrays present, use the `Depth` parameter to control how deep you want
     objects. The default depth is 1. Objects at the deepest level will never return array properties and any object

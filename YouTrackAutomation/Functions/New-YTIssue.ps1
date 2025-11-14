@@ -125,7 +125,7 @@ function New-YTIssue
 
     $fields = Get-YTEntityField -Type 'Issue' -Depth $script:defaultIssueFieldDepth
 
-    $issue = Invoke-YTRestMethod -Session $Session -Name 'issues' -Property $fields -Body $issue -Method Post
+    $issue = Invoke-YTRestMethod -Session $Session -Resource 'issues' -Property $fields -Body $issue -Method Post
 
     if (-not $Parent)
     {

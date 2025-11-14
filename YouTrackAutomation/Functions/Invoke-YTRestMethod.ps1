@@ -6,8 +6,8 @@ function Invoke-YTRestMethod
     Invokes a REST method in YouTrack.
 
     .DESCRIPTION
-    The `Invoke-YTRestMethod` function call a YouTrack REST API resource. Pass the YouTrack session to the `Session`
-    parameter. Pass the resource's path to the `Name` parameter. Makes a GET request to the `/api/${Name}` resource.
+    The `Invoke-YTRestMethod` function calls a YouTrack REST API resource. Pass the YouTrack session to the `Session`
+    parameter. Pass the resource's path to the `Resource` parameter. Makes a GET HTTP request to `/api/${Resource}`.
 
     Use the `Method` parameter to make a different HTTP request. If the request requires a body, pass the body as a
     hashtable to the `Body` parameter. The parameter is converted to JSON and sent as the body of the request. When
@@ -38,35 +38,35 @@ function Invoke-YTRestMethod
     Supports `-WhatIf`. When `-WhatIf` is used, `Invoke-YTRestMethod` only makes GET requests to the YouTrack API.
 
     .EXAMPLE
-    Invoke-YTRestMethod -Session $session -Name 'admin/projects'
+    Invoke-YTRestMethod -Session $session -Resource 'admin/projects'
 
     Demonstrates invoking the `GET` method on the `admin/projects` resource.
 
     .EXAMPLE
-    Invoke-YTRestMethod -Session $session -Name 'admin/projects' -Method Post -Body @{ name = 'Demo Project' ; shortName = 'DEMO' ; leader = @{id = '2-1'} }
+    Invoke-YTRestMethod -Session $session -Resource 'admin/projects' -Method Post -Body @{ name = 'Demo Project' ; shortName = 'DEMO' ; leader = @{id = '2-1'} }
 
     Demonstrates invoking the `POST` method on the `admin/projects` resource to create a project named "Demo Project",
     short name "DEMO", and leader set to the user who's ID is "2-1". The request sets the `fields` query string
     parameter to `name,shortName,leader(id)` to get the same object and attribute structure back from YouTrack.
 
     .EXAMPLE
-    Invoke-YTRestMethod -Session $session -Name 'issues/DEMO-1' -Property 'id,summary'
+    Invoke-YTRestMethod -Session $session -Resource 'issues/DEMO-1' -Property 'id,summary'
 
     Demonstrates how to customize the attributes received in the response from YouTrack.
 
     .EXAMPLE
-    Invoke-YTRestMethod -Session $session -Name 'issues/DEMO-1' -Property (Get-YTEntityField -Type 'Issue')
+    Invoke-YTRestMethod -Session $session -Resource 'issues/DEMO-1' -Property (Get-YTEntityField -Type 'Issue')
 
     Demonstrates how to use `Get-YTEntityField` to create a list of attributes to receive in the response from YouTrack.
 
     .EXAMPLE
-    Invoke-YTRestMethod -Session $session -Name 'admin/projects' -QueryParameter @{ template = 'scrum' } -Body @{ name = 'Demo Project' ; shortName = 'DEMO' ; leader = @{id = '2-1'} } -Method Post
+    Invoke-YTRestMethod -Session $session -Resource 'admin/projects' -QueryParameter @{ template = 'scrum' } -Body @{ name = 'Demo Project' ; shortName = 'DEMO' ; leader = @{id = '2-1'} } -Method Post
 
     Demonstrates how to use `QueryParameter` to send query string parameters as part of the request. In this example,
     `template=scrum` will be send in the query string.
 
     .EXAMPLE
-    Invoke-YTRestMethod -Session $session -Name 'issues' -Top 20
+    Invoke-YTRestMethod -Session $session -Resource 'issues' -Top 20
 
     Demonstrates how to use the `Top` parameter to control how many elements/objects are returned by YouTrack. This adds
     `$top=20` the the request's query string.
@@ -79,7 +79,7 @@ function Invoke-YTRestMethod
 
         # The API resource to make a request to. This should be everything after the `/api/` in the resource's full URL.
         [Parameter(Mandatory)]
-        [String] $Name,
+        [String] $Resource,
 
         # The type of request method, defaults to Get.
         [Microsoft.PowerShell.Commands.WebRequestMethod] $Method =
@@ -190,7 +190,7 @@ function Invoke-YTRestMethod
         $baseUrl = "${baseUrl}/"
     }
 
-    [Uri]$url = [Uri]"${baseUrl}api/${name}${queryString}"
+    [Uri]$url = [Uri]"${baseUrl}api/${Resource}${queryString}"
 
     $auth = "Bearer $($Session.ApiToken)"
     if ($Session.Credential)

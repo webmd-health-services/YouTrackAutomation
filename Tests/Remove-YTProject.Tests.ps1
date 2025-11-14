@@ -72,7 +72,7 @@ Describe 'Remove-YTProject' {
         {
             Invoke-YTRestMethod -Session $script:session `
                                 -Method Delete `
-                                -Name "admin/projects/$($script:project.id)" `
+                                -Resource "admin/projects/$($script:project.id)" `
                                 -ErrorAction Ignore
         }
     }

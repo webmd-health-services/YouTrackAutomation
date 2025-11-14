@@ -60,13 +60,13 @@ function Get-YTUser
             $entityType = 'Me'
         }
 
-        $endpoint = Protect-YTPath -SafeBasePath 'users' -UnsafeChildPath $User
+        $resource = Protect-YTResourcePath -SafeBasePath 'users' -UnsafeChildPath $User
 
         if (-not $Property)
         {
             $Property = Get-YTEntityField -Type $entityType -Depth 2
         }
 
-        return Invoke-YTRestMethod -Session $Session -Name $endpoint -Property $Property
+        return Invoke-YTRestMethod -Session $Session -Resource $resource -Property $Property
     }
 }

@@ -43,7 +43,7 @@ function Remove-YTProject
         Set-StrictMode -Version 'Latest'
         Use-CallerPreference -Cmdlet $PSCmdlet -SessionState $ExecutionContext.SessionState
 
-        $endpoint = Protect-YTPath -SafeBasePath 'admin/projects' -UnsafeChildPath $Project
-        Invoke-YTRestMethod -Session $Session -Method Delete -Name $endpoint
+        $resource = Protect-YTResourcePath -SafeBasePath 'admin/projects' -UnsafeChildPath $Project
+        Invoke-YTRestMethod -Session $Session -Method Delete -Resource $resource
     }
 }

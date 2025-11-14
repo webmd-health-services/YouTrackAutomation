@@ -7,25 +7,25 @@ BeforeAll {
     Import-Module -Name (Join-Path -Path $PSScriptRoot -ChildPath '..\YouTrackAutomation' -Resolve)
 }
 
-Describe 'Protect-YTPath' {
+Describe 'Protect-YTResourcePath' {
     BeforeEach {
         $Global:Error.Clear()
     }
 
     It 'joins paths' {
-        Protect-YTPath 'one','two','three' | Should -Be 'one/two/three'
+        Protect-YTResourcePath 'one','two','three' | Should -Be 'one/two/three'
     }
 
     It 'accepts pipeline input' {
-        'four','five','six' | Protect-YTPath | Should -Be 'four/five/six'
+        'four','five','six' | Protect-YTResourcePath | Should -Be 'four/five/six'
     }
 
     It 'escapes URL-sensitive characters' {
-        Protect-YTPath '?','//', '=&' | Should -Be '%3F/%2F%2F/%3D%26'
+        Protect-YTResourcePath '?','//', '=&' | Should -Be '%3F/%2F%2F/%3D%26'
     }
 
     It 'prepends base path' {
-        Protect-YTPath -SafeBasePath 'seven/eight/nine' -UnsafeChildPath 'fubar/snafu' |
+        Protect-YTResourcePath -SafeBasePath 'seven/eight/nine' -UnsafeChildPath 'fubar/snafu' |
             Should -Be 'seven/eight/nine/fubar%2Fsnafu'
     }
 }

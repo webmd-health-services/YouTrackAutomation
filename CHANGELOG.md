@@ -29,6 +29,7 @@
 * Remove usages of `Resolve-YTIssueCustomFields` and `Resolve-YTProjectId`.
 * Rename usages of the `Get-YTProject` function's `ShortName` parameter to `Project`. It now accepts either a project
   short name or a project ID.
+* Rename usages of the `Invoke-YRestMethod` function's `-Name` parameter to `-Resource`.
 
 ### Added
 
@@ -45,7 +46,7 @@
 * `Top` parameter, to control how many results are returned by the API.
 * Added verbose messages to `Invoke-YTRestMethod` that show the request being made to the API.
 * `Remove-YTProject`: accept project objects, project IDs, or project short names from the pipeline.
-* Function `Invoke-YTCommand` for working with the `commands` endpoint.
+* Function `Invoke-YTCommand` for working with the `commands` resource.
 * `New-YTIssue` can now also link new issues as subtasks of a parent issue. Pass the parent issue ID or readable ID to
   the new `Parent` parameter.
 * `Remove-YTProject`: accept project objects, project IDs, or project short names from the pipeline.
@@ -55,7 +56,8 @@
   * `Project` searches for issues in a specific project.
   * `Summary` searches for issues whose summary matches a search string.
   * `SubtaskOf` searches for issues that are subtasks of a parent issue.
-* Function `Protect-YTPath` for creating a URL-safe paths to a YouTrack API resource using values that come from users.
+* Function `Protect-YTResourcePath` for creating a URL-safe paths to a YouTrack API resources when using input that come
+  from users.
 * Function `Get-YTBundle` for getting a YouTrack bundle.
 * Pipe issue objects, issue IDs, or issue readable IDs to `Get-YTIssueCustomField`.
 * `Get-YTIssueCustomField` returns all object properties on custom field when given custom field type.
@@ -81,6 +83,7 @@
 * `New-YTSession` writes an error if the URL to YouTrack includes a path. There are multiple YouTrack REST APIs with
   different paths. In order not to require a different session for each API, the path is no longer allowed and
   YouTrackAutomation manages the path to the correct API.
+* Renamed the `Invoke-YTRestMethod` function's `Name` parameter to `Resource`.
 
 ## 1.1.0
 

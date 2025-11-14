@@ -21,8 +21,7 @@ function Get-YTProject
     If the `ShortName` parameter is provided, the function will return only the project with the matching short
     name.
 
-    By default the API endpoint will only return the top 42 projects. The `Top` parameter can be used to set the
-    maximum number of projects that are returned.
+    Use the `Top` parameter to control how many projects to return.
 
     .EXAMPLE
     Get-YTProject -Session $session
@@ -69,14 +68,14 @@ function Get-YTProject
         $Property = Get-YTEntityField -Type 'Project'
     }
 
-    $endpoint = 'admin/projects'
+    $resource = 'admin/projects'
     if ($Project)
     {
-        $endpoint = Protect-YTPath -SafeBasePath $endpoint -UnsafeChildPath $Project
+        $resource = Protect-YTResourcePath -SafeBasePath $resource -UnsafeChildPath $Project
     }
 
     $projects =
-        Invoke-YTRestMethod -Session $Session -Name $endpoint -Property $Property -Top $Top
+        Invoke-YTRestMethod -Session $Session -Resource $resource -Property $Property -Top $Top
 
     return $projects
 }

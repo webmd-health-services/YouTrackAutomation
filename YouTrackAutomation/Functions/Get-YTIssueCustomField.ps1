@@ -57,12 +57,12 @@ function Get-YTIssueCustomField
         Set-StrictMode -Version 'Latest'
         Use-CallerPreference -Cmdlet $PSCmdlet -SessionState $ExecutionContext.SessionState
 
-        $baseEndpoint = Protect-YTPath -SafeBasePath 'issues' -UnsafeChildPath $Issue
-        $endpoint = "${baseEndpoint}/customFields"
+        $baseResource = Protect-YTResourcePath -SafeBasePath 'issues' -UnsafeChildPath $Issue
+        $resource = "${baseResource}/customFields"
 
         if ($Field)
         {
-            $endpoint = Protect-YTPath -SafeBasePath "${baseEndpoint}/fields" -UnsafeChildPath $Field
+            $resource = Protect-YTResourcePath -SafeBasePath "${baseResource}/fields" -UnsafeChildPath $Field
         }
 
         $isTyped = $true
@@ -92,6 +92,6 @@ function Get-YTIssueCustomField
             }
         }
 
-        return Invoke-YTRestMethod -Session $session -Name $endpoint -Property $propertyNames
+        return Invoke-YTRestMethod -Session $session -Resource $resource -Property $propertyNames
     }
 }

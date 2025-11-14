@@ -61,7 +61,7 @@ function New-YTProject
     if ($Leader -notmatch '\d+-\d+')
     {
         $Leader =
-            Invoke-YTRestMethod -Session $Session -Name 'users' -Property 'name','id' |
+            Invoke-YTRestMethod -Session $Session -Resource 'users' -Property 'name','id' |
             Where-Object 'name' -eq $Leader |
             Select-Object -ExpandProperty 'id'
     }
@@ -91,7 +91,7 @@ function New-YTProject
     }
 
     Invoke-YTRestMethod -Session $Session `
-                        -Name 'admin/projects' `
+                        -Resource 'admin/projects' `
                         -Body $body `
                         -Property $Property `
                         -Method Post `
