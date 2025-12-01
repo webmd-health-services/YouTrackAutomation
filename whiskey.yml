@@ -29,14 +29,6 @@ Build:
     DeleteSourceFiles: true
     TextSeparator: "$(NewLine)$(NewLine)"
 
-- PowerShell:
-    ExceptDuring: Clean
-    Path: init.ps1
-
-- PowerShell:
-    OnlyDuring: Clean
-    Path: reset.ps1
-
 - CopyFile:
     Path:
     - CHANGELOG.md
@@ -58,6 +50,19 @@ Build:
     Path: appveyor
     Argument: [ 'PushArtifact', '.output/YouTrackAutomation-$(WHISKEY_SEMVER2).zip', '-DeploymentName', 'GitHub' ]
 
+- PublishPowerShellModule:
+    Path: YouTrackAutomation
+
+- Exec:
+    OnlyBy: BuildServer
+    Path: appveyor
+    Argument: [
+        'PushArtifact',
+        '.output/YouTrackAutomation.$(WHISKEY_SEMVER2_NO_BUILD_METADATA).nupkg',
+        '-DeploymentName',
+        'PowerShellGallery'
+    ]
+
 - Pester:
     Configuration:
         Run:
@@ -70,22 +75,3 @@ Build:
             TestSuiteName: YouTrackAutomation
         Output:
             Verbosity: Detailed
-
-- PublishPowerShellModule:
-    Path: YouTrackAutomation
-
-- PowerShell:
-    OnlyBy: BuildServer
-    Path: reset.ps1
-    Argument:
-        OnlyJava: true
-
-- Exec:
-    OnlyBy: BuildServer
-    Path: appveyor
-    Argument: [
-        'PushArtifact',
-        '.output/YouTrackAutomation.$(WHISKEY_SEMVER2_NO_BUILD_METADATA).nupkg',
-        '-DeploymentName',
-        'PowerShellGallery'
-    ]

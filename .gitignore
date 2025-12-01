@@ -1,8 +1,10 @@
 /.output
-/PSModules
 /.vscode
+/.yt
+/PSModules
+/Tests/.token
+/YouTrackAutomation/Bin
 /YouTrackAutomation/CHANGELOG.md
 /YouTrackAutomation/LICENSE.txt
 /YouTrackAutomation/NOTICE.txt
 /YouTrackAutomation/README.md
-/YouTrackAutomation/Bin

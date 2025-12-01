@@ -10,16 +10,16 @@ function New-YTProject
 
     * `Name`: The name of the project.
     * `ShortName`: The short name of the project.
-    * `Leader`: The id or the name of the project owner.
+    * `LeaderID`: The user id of the project owner.
 
     .EXAMPLE
-    New-YTProject -Session $session -Name 'Demo Project' -ShortName 'DEMO' -Leader 'admin'
+    New-YTProject -Session $session -Name 'Demo Project' -ShortName 'DEMO' -LeaderID '2-1'
 
     Demonstrates creating a new project in YouTrack with the name `Demo Project`, the short name `DEMO`, and the project
     owner `admin`.
 
     .EXAMPLE
-    New-YTProject -Session $session -Name 'Demo Project' -ShortName 'DEMO' -Leader '2-1'
+    New-YTProject -Session $session -Name 'Demo Project' -ShortName 'DEMO' -LeaderID '2-1'
 
     Demonstrates creating a new project in YouTrack with the name `Demo Project`, the short name `DEMO`, and the project
     owner `admin`, but using the project owner's id instead of their name.
@@ -38,9 +38,9 @@ function New-YTProject
         [Parameter(Mandatory)]
         [String] $ShortName,
 
-        # The id or the name of the project owner.
+        # The user id of the project owner. Use `Get-YTUser` to find users by login to get their IDs.
         [Parameter(Mandatory)]
-        [String] $Leader,
+        [String] $LeaderID,
 
         # The description of the project.
         [String] $Description,
@@ -50,26 +50,17 @@ function New-YTProject
         [String] $Template,
 
         # Additional fields to include in the response.
-        [String[]] $AdditionalField
+        [String[]] $Property
     )
 
     Set-StrictMode -Version 'Latest'
     Use-CallerPreference -Cmdlet $PSCmdlet -SessionState $ExecutionContext.SessionState
 
-    if ($Leader -notmatch '\d+-\d+')
-    {
-        $Leader =
-            Invoke-YTRestMethod -Session $Session -Name 'users?fields=name,id' |
-            Where-Object { $_.name -eq $Leader } |
-            Select-Object -ExpandProperty 'id'
-    }
-
-    $fields = 'id,name,shortName'
     $body = @{
         name = $Name;
         shortName = $ShortName;
         leader = @{
-            id = $Leader;
+            id = $LeaderID;
         };
     }
 
@@ -78,19 +69,21 @@ function New-YTProject
         $body['description'] = $Description
     }
 
-    if ($AdditionalField)
+    if (-not $Property)
     {
-        $fields += ",$($AdditionalField -join ',')"
+        $Property = Get-YTEntityField -Type 'Project'
     }
 
-    $fields = [Uri]::EscapeDataString($fields)
-
+    $queryParams = @{}
     if ($Template)
     {
-        # Template portion needs to be encoded with EscapeUriString as EscapeDataString creates a query string with
-        # invalid syntax
-        $fields += "&template=$([Uri]::EscapeUriString($Template))"
+        $queryParams['template'] = $Template
     }
 
-    Invoke-YTRestMethod -Session $Session -Name "admin/projects?fields=$fields" -Body $body -Method Post
+    Invoke-YTRestMethod -Session $Session `
+                        -Resource 'admin/projects' `
+                        -Body $body `
+                        -Property $Property `
+                        -Method Post `
+                        -QueryParameter $queryParams
 }

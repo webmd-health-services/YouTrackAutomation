@@ -3,57 +3,106 @@ function Get-YTIssueCustomField
 {
     <#
     .SYNOPSIS
-    Gets a custom field for an issue.
+    Gets an issue's custom fields.
 
     .DESCRIPTION
-    The `Get-YTIssueCustomField` function gets the specified field information from a YouTrack issue. Provide the
-    issue's ID to the `IssueID` parameter. Provide the name of the custom field to the `CustomField` parameter. If the
-    custom field is not available this function will throw an error.
+    The `Get-YTIssueCustomField` function gets an issue's custom fields. Pass the issue's ID or readable ID to the
+    `Issue` parameter. All the custom fields for that issue are returned along with their ID and name (value).
 
-    By default, this function will return an object containing the name of the custom field and its value. To just get
-    the value of the field use the `Value` switch.
+    To get a specific custom field, pass its name or ID to the `Field` parameter. To get a typed object back, (i.e. all
+    the field's properties exist), pass the field's type to the `Type` parameter.
+
+    You can also pipe custom field objects to `Get-YTIssueCustomField` to get full fields back. So you can do things
+    like:
+
+        $issue = Get-YTIssue -Session $session -Issue 'DEMO-4'
+        $issue.customFields | Get-YTIssueCustomField -Session $session -Issue $issue.idReadable
 
     .EXAMPLE
-    Get-YTIssueCustomField -Session $session -IssueId 'DEMO-4' -CustomField 'Type'
+    Get-YTIssueCustomField -Session $session -Issue 'DEMO-4'
 
-    Demonstrates getting the issue type for issue 'DEMO-4'.
+    Demonstrates how to get all an issue's custom fields by passing the issue's ID or readable ID to the `Issue`
+    parameter.
 
     .EXAMPLE
-    Get-YTIssueCustomField -Session $session -IssueId 'DEMO-20' -CustomField 'State' -Value
+    Get-YTIssueCustomField -Session $session -Issue 'DEMO-20' -Field 'State'
 
-    Demonstrates getting the state value for the issue 'DEMO-20'
+    Demonstrates how to get a specific field by passings its ID or name to the `Field` parameter.
+
+    .EXAMPLE
+    Get-YTIssueCustomField -Session $session -Issue 'DEMO-2' -Field 'State' -Type 'StateIssueCustomField'
+
+    Demonstrates how to return an object with the properties of the specific field type you want by passing the field's
+    type name to the `Type` parameter.
     #>
-    [CmdletBinding()]
+    [CmdletBinding(DefaultParameterSetName='AllFields')]
     param(
         # The Session object for a YouTrack session. Create a new Session using `New-YTSession`.
         [Parameter(Mandatory)]
         [Object] $Session,
 
-        # The ID of the issue.
+        # The ID or readable ID of the issue.
         [Parameter(Mandatory)]
-        [String] $IssueId,
+        [String] $Issue,
 
-        # The name of the custom field to fetch.
-        [Parameter(Mandatory)]
-        [String] $CustomField,
+        # The name or ID of the specific custom field to get. Default is to return all the issue's custom fields. You
+        # can pipe field objects, IDs, or names as well. When you pipe objects, `Get-YTIssueCustomField` detects the
+        # field's types and returns all object properties.
+        [Parameter(Mandatory, ValueFromPipeline, ValueFromPipelineByPropertyName, ParameterSetName='SpecificField')]
+        [Alias('id')]
+        [Alias('name')]
+        [String] $Field,
 
-        # Returns only the value of the custom field.
-        [switch] $Value
+        # The field's type, e.g. StateIssueCustomField, SingleEnumIssueCustomField, etc. Controls what properties exist
+        # on the returned object. Required in order to return the field's value.
+        [Parameter(ParameterSetName='SpecificField', ValueFromPipelineByPropertyName)]
+        [Alias('$type')]
+        [String] $Type
     )
 
-    Set-StrictMode -Version 'Latest'
-    Use-CallerPreference -Cmdlet $PSCmdlet -SessionState $ExecutionContext.SessionState
-
-    $issueFields = Resolve-YTIssueCustomFields -Session $Session -IssueId $IssueId
-
-    $endpoint = "issues/${IssueId}/customFields/$($issueFields[$customField])?fields=id,projectCustomField(id,field(id,name))," +
-                'value(id,isResolved,localizedName,name)'
-    $customFieldObject = Invoke-YTRestMethod -Session $session `
-                                             -Name $endpoint
-    if ($Value)
+    begin
     {
-        return $customFieldObject.value.name
+        Set-StrictMode -Version 'Latest'
+        Use-CallerPreference -Cmdlet $PSCmdlet -SessionState $ExecutionContext.SessionState
+
+        $baseResource = Protect-YTResourcePath -SafeBasePath 'issues' -UnsafeChildPath $Issue
+        $resource = "${baseResource}/customFields"
     }
 
-    return $customFieldObject
+    process
+    {
+        if ($Field)
+        {
+            $resource = Protect-YTResourcePath -SafeBasePath "${baseResource}/fields" -UnsafeChildPath $Field
+        }
+
+        $isTyped = $true
+
+        if (-not $Type)
+        {
+            $isTyped = $false
+            $Type = 'IssueCustomField'
+        }
+
+        $propertyNames = Get-YTEntityField -Type $Type -Depth 2
+
+        # User wants custom value type, so all the sub-types are known and we should go one level deeper to get all the
+        # info.
+        if ($isTyped)
+        {
+            $propertyNames = & {
+                $propertyNames | Where-Object { -not $_.StartsWith('value(') } | Write-Output
+                $depth = 3
+                if ($Type -eq 'SingleUserIssueCustomField')
+                {
+                    # If we go one more level, we return tags and saved queries, which is... a lot.
+                    $depth = 2
+                }
+
+                Get-YTEntityField -Type $Type -Depth $depth | Where-Object { $_.StartsWith('value(') }
+            }
+        }
+
+        return Invoke-YTRestMethod -Session $session -Resource $resource -Property $propertyNames
+    }
 }

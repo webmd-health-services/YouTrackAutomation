@@ -3,9 +3,10 @@ Set-StrictMode -Version 'Latest'
 BeforeAll {
     Set-StrictMode -Version 'Latest'
 
-    & (Join-Path -Path $PSScriptRoot -ChildPath 'Initialize-Test.ps1' -Resolve)
+    Import-Module -Name (Join-Path -Path $PSScriptRoot -ChildPath '..\YouTrackAutomation' -Resolve)
+    Import-Module -Name (Join-Path -Path $PSScriptRoot -ChildPath 'YouTrackAutomationTestHelper' -Resolve)
 
-    Clear-Project -Wait
+    $script:session = Get-YTTSession
 
     function GivenProject
     {
@@ -16,20 +17,30 @@ BeforeAll {
             [String] $Leader = 'admin'
         )
 
+        $user = Get-YTUser -Session $script:session -User $Leader
         $script:projectShortName = $ShortName
-        New-YTProject -Session $script:session -ShortName $ShortName -Name $Name -Leader $Leader -Description 'This is a test project.'
+        $project = New-YTProject -Session $script:session `
+                                 -ShortName $ShortName `
+                                 -Name $Name `
+                                 -LeaderID $user.id `
+                                 -Description 'This is a test project.' `
+                                 -ErrorAction Ignore
+        if ($project)
+        {
+            return $project
+        }
+
+        Get-YTProject -Session $script:session -Project $ShortName
     }
 
     function WhenGettingProject
     {
         [CmdletBinding()]
         param(
-            [String] $ShortName,
-            [String] $AdditionalField,
-            [int] $Top
+            [hashtable] $WithArgs = @{}
         )
 
-        $script:result = Get-YTProject -Session $script:session @PSBoundParameters
+        $script:result = Get-YTProject -Session $script:session @WithArgs
     }
 
     function ThenReturns
@@ -74,29 +85,45 @@ BeforeAll {
 
 Describe 'Get-YTProject' {
     BeforeEach {
-        $script:session = New-YTSession -Url $apiUrl -ApiToken $apiToken
         $script:result = $null
+        $Global:Error.Clear()
     }
 
-    It 'returns one project' {
+    It 'gets project by short name' {
         GivenProject -ShortName 'GYTP1' -Name 'Get-YTProject Test Project' -Leader 'admin'
-        WhenGettingProject -ShortName 'GYTP1'
+        WhenGettingProject -WithArgs @{ Project = 'GYTP1' }
         ThenReturns -Count 1 -ProjectWithShortName 'GYTP1'
     }
 
-    It 'return all projects' {
-        GivenProject -ShortName 'GYTP2' -Name 'Get-YTProject Test Project' -Leader 'admin'
-        WhenGettingProject
-        ThenReturns -Count 2 -ProjectWithShortName 'GYTP1', 'GYTP2'
+    It 'gets project by ID' {
+        $project = GivenProject -ShortName 'GYTP1B' -Name 'Get-YTProject Test Project 1B' -Leader 'admin'
+        WhenGettingProject -WithArgs @{ Project = $project.id }
+        ThenReturns -Count 1 -ProjectWithShortName 'GYTP1B'
     }
 
-    It 'should support additional fields' {
-        WhenGettingProject -ShortName 'GYTP1' -AdditionalField 'description'
+    It 'returns all projects' {
+        WhenGettingProject
+        ($script:result | Measure-Object).Count | Should -BeGreaterThan 1
+    }
+
+    It 'supports custom properties' {
+        WhenGettingProject -WithArgs @{ Project = 'GYTP1'; Property = 'id','description' }
         ThenReturns -Count 2 -ProjectWithField 'description'
     }
 
-    It 'should return the number of items specified' {
-        WhenGettingProject -Top 1
+    It 'supports top' {
+        WhenGettingProject -WithArgs @{ Top = 1; }
         ThenReturns -Count 1
+    }
+
+    It 'escapes project' {
+        WhenGettingProject -WithArgs @{ Project = 'GYTP1?fields=iconUrl' } -ErrorAction SilentlyContinue
+        $Global:Error | Should -Match 'not found'
+    }
+
+    It 'ignores errors' {
+        WhenGettingProject -WithArgs @{ Project = 'fubarsnafufizzbuzz' ; ErrorAction = 'Ignore' }
+        $script:result | Should -BeNullOrEmpty
+        $Global:Error | Should -HaveCount 1 # The original HTTP 500 server exception can't be removed.
     }
 }
