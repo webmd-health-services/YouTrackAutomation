@@ -6,27 +6,25 @@ function Get-YTBundle
     Gets a bundle from YouTrack.
 
     .DESCRIPTION
-    The `Get-YTBundle` function gets a bundle from YouTrack. Pass the bundle ID to the ID parameter. Pass the bundle's
+    The `Get-YTBundle` function gets a bundle from YouTrack. Pass the bundle ID to the `ID` parameter and the bundle's
     type to the `Type` parameter. The function returns the bundle.
 
-    To get a bundle ID and type from an issue, use `Get-YTIssueCustomField` for the specific field. The return object
-    will have a `value.bundle` property. You can pipe the `value.bundle` object to this function, or pass the
-    `value.bundle.id` property to the `ID` parameter, and the `value.bundle.'$type'` property to the `Type` parameter.
+    To get a bundle ID and type from an issue, use `Get-YTIssueCustomField` for the specific field. The returned object
+    has a `value.bundle` property you can pipe to this function.
 
     .EXAMPLE
-    Get-YTBundle -Session $session -ID 136-0 -Type 'EnumBundle'
+    Get-YTBundle -Session $session -ID '136-0' -Type 'EnumBundle'
 
-    Demonstrates how to get a bundle by passing its ID to the `ID` parameter and its type to the `Type` parameter.
+    Demonstrates getting a bundle by its ID and type.
 
     .EXAMPLE
     (Get-YTIssueCustomField -Session $session -Issue 'DEMO-1' -Field 'State').value.bundle | Get-YTBundle -Session $session
 
-    Demonstrates how to get a bundle from an issue's custom field. In this example, the bundle for the DEMO-2 issue's
-    state field is returned.
+    Demonstrates getting a bundle from an issue's custom field.
     #>
     [CmdletBinding()]
     param(
-        # The session to the instance of YouTrack. Use `New-YTSession` to create sessions.
+        # The session object for a YouTrack session. Create a new session using `New-YTSession`.
         [Parameter(Mandatory)]
         [Object] $Session,
 
@@ -34,7 +32,7 @@ function Get-YTBundle
         [Parameter(Mandatory, ValueFromPipelineByPropertyName)]
         [String] $ID,
 
-        # The Type of bundle to get.
+        # The type of bundle to get.
         [Parameter(Mandatory, ValueFromPipelineByPropertyName)]
         [Alias('$type')]
         [String] $Type
@@ -47,7 +45,8 @@ function Get-YTBundle
 
         $typeResourceName = $Type.ToLowerInvariant() -replace 'bundle$', ''
         $resource =
-            Protect-YTResourcePath -SafeBasePath 'admin/customFieldSettings/bundles' -UnsafeChildPath $typeResourceName,$ID
+            Protect-YTResourcePath -SafeBasePath 'admin/customFieldSettings/bundles' `
+                                   -UnsafeChildPath $typeResourceName, $ID
 
         $fields = Get-YTEntityField -Type $Type -Depth 2
         if (-not $fields)
@@ -55,7 +54,13 @@ function Get-YTBundle
             $fields = Get-YTEntityField -Type 'Bundle' -Depth 2
         }
 
-        Invoke-YTRestMethod -Session $Session -Resource $resource -Property $fields
-    }
+        $headers = @{
+            'Accept' = 'application/json'
+            'Authorization' = "Bearer $($Session.ApiToken)"
+        }
 
+        $queryParams = @{ fields = ($fields -join ',') }
+
+        Invoke-RestMethod -Uri "$($Session.Url)$($resource)" -Headers $headers -Method Get -Body $queryParams
+    }
 }

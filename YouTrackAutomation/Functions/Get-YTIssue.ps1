@@ -3,141 +3,74 @@ function Get-YTIssue
 {
     <#
     .SYNOPSIS
-    Gets issues from YouTrack.
+    Gets one or more issues from YouTrack.
 
     .DESCRIPTION
-    The `Get-YTIssue` function gets issue from YouTrack. By default all issues are returned. To get a specific issue,
-    pass its ID or its readable ID to the `Issue` parameter. You can also pipe issue objects, issue IDs and/or issue
-    readable IDs to get multiple issues.
+    The `Get-YTIssue` function gets issues from YouTrack by issue ID (`3-4`) or readable ID (`DEMO-3`). Pass one or more
+    IDs to the `IssueId` parameter, or pipe issue objects, issue IDs, and/or readable IDs to the function.
 
-    By default all issue fields and fields for those fields are returned. Use the `Property` parameter to customize what
-    fields to return and what fields on nested objects to return. Use the `Get-YTEntityField` function to get a full
-    field list for an object by its type, with the option to get a field list for nested fields up to five levels deep.
-
-    You can search for issues that belong to a specific project, contain text in their summary, or are subtasks of
-    another issue using the `Project`, `Summary`, and `SubtaskOf` parameters, respectively. The values of these
-    parameters should be the same as you'd use to search in the YouTrack UI using the `project:`, `summary`, and
-    `subtask of:` attribute search clauses. See YouTrack's
-    [Search](https://www.jetbrains.com/help/youtrack/server/search-for-issues.html) documenation for more information
-    for how to search YouTrack.
-
-    .LINK
-    https://www.jetbrains.com/help/youtrack/server/search-for-issues.html
+    A set of default fields is returned for each issue, including the issue's custom fields. The custom fields are also
+    flattened onto the returned object as top-level properties (via `ConvertTo-YTObj`) so, e.g., an issue's `State`
+    custom field is available as `$issue.State`.
 
     .EXAMPLE
-    Get-YTIssue -Session $session -Issue 'DEMO-1'
+    Get-YTIssue -Session $session -IssueId 'DEMO-1'
 
-    Demonstrates fetching an issue based on the issue key. This will return the default fields for the `DEMO-1` issue.
-
-    .EXAMPLE
-    Get-YTIssue -Session $session -Issue '3-4'
-
-    Demonstrates fetching an issue based on the issue id. This will return the default fields for the `DEMO-5` issue.
+    Demonstrates fetching an issue by its readable ID.
 
     .EXAMPLE
-    Get-YTIssue -Session $session -Issue 'DEMO-1' -Property 'comments(id,author(name),text)'
+    'DEMO-1', 'DEMO-2' | Get-YTIssue -Session $session
 
-    Demonstrates fetching an issue based on the issue key and including additional fields. This will return the default
-    fields for the `DEMO-1` issue, as well as the comments for the issue along with the comment id, comment author, and
-    comment text.
-
-    .EXAMPLE
-    Get-YTIssue -Session $session -Project 'MYPROJ'
-
-    Demonstrates how to get all the issues in a specific project by passing the project short name to the `Project`
-    parameter. See https://www.jetbrains.com/help/youtrack/server/search-and-command-attributes.html#project for more
-    information.
-
-    .EXAMPLE
-    Get-YTIssue -Session $session -Summary 'some search text'
-
-    Demonstrates how to get all issues whose summaries match a search query.See
-    https://www.jetbrains.com/help/youtrack/server/search-and-command-attributes.html#summary for more information.
-
-    .EXAMPLE
-    Get-YTIssue -Session $session -SubtaskOf DEMO-2
-
-    Demonstrates how to get all issues that are subtasks of a parent issue by passing the parent issue's readable ID to
-    the `SubtaskOf` parameter. See
-    https://www.jetbrains.com/help/youtrack/server/search-and-command-attributes.html#subtask-of for more information.
+    Demonstrates fetching multiple issues by piping their readable IDs.
     #>
-    [CmdletBinding(DefaultParameterSetName='Query')]
+    [CmdletBinding()]
     param(
-        # The Session object for a YouTrack session. Create a new Session using `New-YTSession`.
+        # The ID of the issue to get. This can be the readable ID (`DEMO-3`) or the internal ID (`3-4`). Accepts an
+        # array and pipeline input.
+        [Parameter(Mandatory, Position = 0, ValueFromPipeline, ValueFromPipelineByPropertyName)]
+        [Alias('Name', 'idReadable')]
+        [String[]] $IssueId,
+
+        # The session object for a YouTrack session. Create a new session using `New-YTSession`.
         [Parameter(Mandatory)]
-        [Object] $Session,
-
-        # The ID (e.g. `3-4`) or readable ID (e.g., `DEMO-3`) of the issue to get. Default is to get all issues.
-        [Parameter(Mandatory, ParameterSetName='SpecificIssue', ValueFromPipeline, ValueFromPipelineByPropertyName)]
-        [Alias('idReadable')]
-        [Alias('id')]
-        [String] $Issue,
-
-        # Returns issues in project that match this search query. Sent as the value for the `project:` search clause.
-        # See https://www.jetbrains.com/help/youtrack/server/search-and-command-attributes.html#project for more
-        # information.
-        [Parameter(ParameterSetName='Query')]
-        [String] $Project,
-
-        # Gets all the issues matching the given summary. Sent as the value for the `summary:` search clause. See
-        # https://www.jetbrains.com/help/youtrack/server/search-and-command-attributes.html#summary for more
-        # information.
-        [Parameter(ParameterSetName='Query')]
-        [string] $Summary,
-
-        # Gets all the issues that are a subtask of the given value. Sent as the value for the `subtask of:` search
-        # clause. See https://www.jetbrains.com/help/youtrack/server/search-and-command-attributes.html#subtask-of for
-        # more information.
-        [Parameter(ParameterSetName='Query')]
-        [String] $SubtaskOf,
-
-        # Fields to include in the response. This should be a comma-separated list of field names.
-        [String[]] $Property
+        [Object] $Session
     )
 
-    process
+    begin
     {
         Set-StrictMode -Version 'Latest'
         Use-CallerPreference -Cmdlet $PSCmdlet -SessionState $ExecutionContext.SessionState
 
-        if (-not $Property)
-        {
-            $Property = Get-YTEntityField -Type 'Issue' -Depth $script:defaultIssueFieldDepth
+        $fields =
+            'id,idReadable,summary,description,tags(name,id),' +
+            'links(id,direction,linkType(name),issues(id,idReadable,summary)),' +
+            'project(id,name,shortName),attachments(id,name,url,created,author(name)),' +
+            'customFields(name,id,value(name,minutes,presentation))'
+
+        $headers = @{
+            'Accept' = 'application/json'
+            'Authorization' = "Bearer $($Session.ApiToken)"
         }
+    }
 
-        $resource = 'issues'
-        if ($Issue)
+    process
+    {
+        foreach ($id in $IssueId)
         {
-            $resource = Protect-YTResourcePath -SafeBasePath $resource -UnsafeChildPath $Issue
-        }
+            $apiUrl = "$($Session.Url)issues/$($id)"
+            $queryParams = @{ fields = $fields }
 
-        $queryParams = @{}
-        if ($PSCmdlet.ParameterSetName -eq 'Query')
-        {
-            $queryParts = & {
-
-                if ($Project)
-                {
-                    "project:${Project}" | Write-Output
-                }
-
-                if ($Summary)
-                {
-                    "summary:${Summary}" | Write-Output
-                }
-
-                if( $SubtaskOf)
-                {
-                    "subtask of:${SubtaskOf}"
-                }
-            }
-
-            if ($queryParts)
+            try
             {
-                $queryParams['query'] = $queryParts -join ' '
+                $response = Invoke-RestMethod -Uri $apiUrl -Headers $headers -Method Get -Body $queryParams
             }
-        }
+            catch
+            {
+                Write-Error -Message "Failed to retrieve issue '$($id)': $($_)" -ErrorAction $ErrorActionPreference
+                continue
+            }
 
-        Invoke-YTRestMethod -Session $Session -Resource $resource -Property $Property -QueryParameter $queryParams
+            ConvertTo-YTObj -YTIssue $response | Write-Output
+        }
     }
 }

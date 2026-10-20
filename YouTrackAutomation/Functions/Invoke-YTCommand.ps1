@@ -3,41 +3,40 @@ function Invoke-YTCommand
 {
     <#
     .SYNOPSIS
-    Calls the `command` REST API resource.
+    Runs a command against one or more YouTrack issues.
 
     .DESCRIPTION
-    The `Invoke-YTCommand` function calls the YouTrack REST API's [command
-    resource](https://www.jetbrains.com/help/youtrack/devportal/resource-api-commands.html). Pass the query to execute
-    to the `Query` parameter. Pass a list of issue IDs or readable IDs to the `Issue` parameter.  You can also pipe the
-    IDs and readable IDs, or you can pipe in issue objects to the function (objects must have an `id` or `idReadable`
-    property). When piping or passing multiple issues, the fuction only makes one request to the API.
+    The `Invoke-YTCommand` function calls the YouTrack REST API's command resource. Pass the command/query to run to the
+    `Query` parameter and the issue(s) to run it against to the `Issue` parameter (readable IDs, IDs, or issue objects;
+    they can also be piped in). All the issues are sent in a single request.
 
-    If you get an error that says something like "issue id expected: NUM-NUM", it means that the query contains an issue
-    ID instead of an issue's readable ID. Use the issue's readable ID instead.
+    If you get an error like "issue id expected: NUM-NUM", the query contains an internal issue ID where a readable ID is
+    required. Use the issue's readable ID.
 
     .LINK
     https://www.jetbrains.com/help/youtrack/devportal/api-usecase-commands.html
 
     .EXAMPLE
-    Invoke-YTCommand -Session $session -Query 'subtask of: 3-3' -Issue 'DEMO-1'
+    Invoke-YTCommand -Session $session -Query 'subtask of: DEMO-3' -Issue 'DEMO-1'
 
-    Demonstrates how to make an issue a subtask of another. In this example, DEMO-1 will be a subtask of the issue with
-    ID 3-3.
+    Demonstrates making `DEMO-1` a subtask of `DEMO-3`.
 
     .EXAMPLE
+    'DEMO-1', 'DEMO-2' | Invoke-YTCommand -Session $session -Query 'State Fixed'
 
-    'DEMO-1','DEMO-2' | Invoke-YTCommand -Session $session -Query 'subtask of: 3-3'
-
-    Demonstrates that you can pipe issue readable IDs to `Invoke-YTCommand` to bulk operate
+    Demonstrates piping readable IDs to run a command in bulk.
     #>
     [CmdletBinding()]
     param(
+        # The session object for a YouTrack session. Create a new session using `New-YTSession`.
         [Parameter(Mandatory)]
         [Object] $Session,
 
+        # The command/query to run.
         [Parameter(Mandatory)]
         [String] $Query,
 
+        # The issue(s) to run the command against. Accepts pipeline input.
         [Parameter(Mandatory, ValueFromPipeline, ValueFromPipelineByPropertyName)]
         [Alias('id')]
         [Alias('idReadable')]
@@ -49,7 +48,7 @@ function Invoke-YTCommand
         Set-StrictMode -Version 'Latest'
         Use-CallerPreference -Cmdlet $PSCmdlet -SessionState $ExecutionContext.SessionState
 
-        $issues = [collections.ArrayList]::New()
+        $issues = [Collections.ArrayList]::new()
     }
 
     process
@@ -62,13 +61,18 @@ function Invoke-YTCommand
 
     end
     {
-        # Must be an array.
         $body = @{
-            'query' = $Query;
-            'issues' = $issues.ToArray();
+            query = $Query
+            issues = $issues.ToArray()
+        } | ConvertTo-Json -Depth 50
+
+        $headers = @{
+            'Accept' = 'application/json'
+            'Content-Type' = 'application/json'
+            'Authorization' = "Bearer $($Session.ApiToken)"
         }
 
-        Invoke-YTRestMethod -Session $Session -Resource 'commands' -Body $body -Method Post |
+        Invoke-RestMethod -Method Post -Uri "$($Session.Url)commands" -Headers $headers -Body $body |
             ConvertTo-Json -Depth 50 |
             Write-Verbose
     }

@@ -1,5 +1,62 @@
 # YouTrackAutomation Changelog
 
+## 3.0.0
+
+This release merges the functions and conventions developed in the `ps-ytautomation` fork into this module. The module
+now calls the YouTrack REST API directly with `Invoke-RestMethod` (the `Invoke-YTRestMethod` wrapper has been removed) and
+uses a simpler session model.
+
+### Upgrade Instructions
+
+* `New-YTSession` no longer accepts the `-Credential` parameter; connect with an `-ApiToken` only. The session object it
+  returns now has its `Url` property set to the base URL with `/api/` appended, and no longer has a `Credential`
+  property.
+* Remove all usages of `Invoke-YTRestMethod`; it has been removed. Call the REST API directly using the session's `Url`
+  and `ApiToken`, or use one of the module's functions.
+* `Get-YTIssue`: rename the `-Issue` parameter to `-IssueId`. The `-Project`, `-Summary`, and `-SubtaskOf` search
+  parameters have been removed; use `Find-YTDescription` or a raw request for searching. Returned issue objects now have
+  their custom fields flattened onto the object (e.g. `$issue.State`) and carry the `WHS.YTIssue.Object` type.
+* `New-YTIssue`: rename the `-ProjectID` parameter to `-Project`; it accepts a project short name or an object with a
+  `shortName` property. Custom fields are still set with `-CustomField`.
+* `Get-YTProject`: rename the `-Project` parameter to `-ShortName`, and the `-Property` parameter to `-AdditionalField`.
+* `Set-YTIssueState`: rename the `-Issue` parameter to `-IssueID` and the `-State` parameter to `-Value`.
+
+### Added
+
+New functions:
+
+* `Add-YTComment`: adds a comment to an issue.
+* `Add-YTTag`: creates a new tag.
+* `Add-YTWork`: logs work time against an issue.
+* `ConvertTo-MarkdownTable`: renders objects as a Markdown table.
+* `ConvertTo-YTObj`: flattens an issue's custom fields onto the issue object.
+* `ConvertTo-YTString`: escapes text for YouTrack markdown/wiki fields.
+* `Find-YTDescription`: searches a project for issues by description text.
+* `Get-YTTag`: gets a tag by name.
+* `Resolve-YTProjectId`: resolves a project object/ID/short name to its project ID.
+* `Set-YTIssueAssignee`: sets an issue's Assignee.
+* `Set-YTIssueCustomField`: sets a single-enum custom field on an issue.
+* `Set-YTIssueDescription`: replaces an issue's description.
+* `Set-YTIssueLink`: links an issue to another issue.
+* `Set-YTTag`: attaches an existing tag to one or more issues.
+
+Other additions:
+
+* The `New-*`, `Set-*`, `Add-*`, and `Remove-*` functions now support `-WhatIf` and `-Confirm`.
+* `Get-YTIssue`, `Add-YTComment`, `Add-YTWork`, `Set-YTIssueAssignee`, `Set-YTIssueCustomField`, `Set-YTIssueLink`,
+  `Set-YTTag`, and `Invoke-YTCommand` accept issue input from the pipeline.
+
+### Changed
+
+* All functions now call `Invoke-RestMethod` directly instead of going through `Invoke-YTRestMethod`.
+* Request bodies are built from hashtables and serialized with `ConvertTo-Json`, replacing interpolated JSON strings.
+
+### Removed
+
+* The `Invoke-YTRestMethod` function.
+* The `-Credential` parameter on `New-YTSession`.
+* The `-Project`, `-Summary`, and `-SubtaskOf` parameters on `Get-YTIssue`.
+
 ## 2.0.0
 
 ### Upgrade Instructions

@@ -1,11 +1,10 @@
 
-
 Set-StrictMode -Version 'Latest'
 
 BeforeAll {
     Set-StrictMode -Version 'Latest'
 
-    & (Join-Path -Path $PSScriptRoot -ChildPath 'Initialize-Test.ps1' -Resolve)
+    Import-Module -Name (Join-Path -Path $PSScriptRoot -ChildPath '..\YouTrackAutomation' -Resolve)
 }
 
 Describe 'New-YTSession' {
@@ -13,48 +12,30 @@ Describe 'New-YTSession' {
         $Global:Error.Clear()
     }
 
-    It 'creates session that uses an API key' {
+    It 'creates a session that uses an API token' {
         $url = 'https://fubar.snafu'
-        $apiKey = 'my-api-key'
-        $session = New-YTSession -Url $url -ApiToken $apiKey
+        $apiToken = 'my-api-token'
+        $session = New-YTSession -Url $url -ApiToken $apiToken
         $session | Should -Not -BeNullOrEmpty
-        $session.Url | Should -Be "${url}/"
-        $session.ApiToken | Should -Be $apiKey
-        $session.Credential | Should -BeNullOrEmpty
+        $session.Url | Should -Be "${url}/api/"
+        $session.ApiToken | Should -Be $apiToken
     }
 
-    It 'creates session that uses credential' {
-        $url = 'https://fubar.snafu'
-        $credential =
-            [pscredential]::new('new-ytsession2', (ConvertTo-SecureString 'new-ytsession2' -Force -AsPlainText))
-        $session = New-YTSession -Url $url -Credential $credential
-        $session | Should -Not -BeNullOrEmpty
-        $session.Url | Should -Be "${url}/"
-        $session.ApiToken | Should -BeNullOrEmpty
-        $session.Credential | Should -BeExactly $credential
+    It 'appends the api path without doubling the slash when the URL has a trailing slash' {
+        $session = New-YTSession -Url 'https://fubar.snafu/' -ApiToken 'doesnotmatter'
+        $session.Url | Should -Be 'https://fubar.snafu/api/'
     }
 
-    It 'handles directory separator in URL' {
-        $session = New-YTSession -Url 'http://localhost:8080/' -ApiToken 'doesnotmatter'
-        $session | Should -Not -BeNullOrEmpty
-        $session.Url | Should -Be 'http://localhost:8080/'
-        $session.ApiToken | Should -Be 'doesnotmatter'
-        $session.Credential | Should -BeNullOrEmpty
+    It 'supports URLs with a path' {
+        $session = New-YTSession -Url 'https://fubar.snafu/youtrack' -ApiToken 'doesnotmatter'
+        $session.Url | Should -Be 'https://fubar.snafu/youtrack/api/'
     }
 
-    It 'supports cloud URLs' {
-        $session = New-YTSession -Url 'http://localhost:8080/youtrack' -ApiToken 'doesnotmatter'
-        $session | Should -Not -BeNullOrEmpty
-        $session.Url | Should -Be 'http://localhost:8080/youtrack/'
-        $session.ApiToken | Should -Be 'doesnotmatter'
-        $session.Credential | Should -BeNullOrEmpty
+    It 'requires a URL' {
+        { New-YTSession -ApiToken 'doesnotmatter' -ErrorAction Stop } | Should -Throw
     }
 
-    It 'handles directory separator in cloud URL' {
-        $session = New-YTSession -Url 'http://localhost:8080/youtrack/' -ApiToken 'doesnotmatter'
-        $session | Should -Not -BeNullOrEmpty
-        $session.Url | Should -Be 'http://localhost:8080/youtrack/'
-        $session.ApiToken | Should -Be 'doesnotmatter'
-        $session.Credential | Should -BeNullOrEmpty
+    It 'requires an API token' {
+        { New-YTSession -Url 'https://fubar.snafu' -ErrorAction Stop } | Should -Throw
     }
 }

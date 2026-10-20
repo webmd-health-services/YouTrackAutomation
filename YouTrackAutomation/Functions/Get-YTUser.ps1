@@ -3,48 +3,40 @@ function Get-YTUser
 {
     <#
     .SYNOPSIS
-    Gets a user.
+    Gets a user from YouTrack.
 
     .DESCRIPTION
-    The `Get-YTUser` function returns a user from YouTrack. Pass the user's ID or login to the `User` property (you can
-    also pipe multiple user objects, user IDs, and user logins to `Get-YTUser`). Returns a [User
-    entity](https://www.jetbrains.com/help/youtrack/devportal/api-entity-User.html) with all properties.
-
-    To get the current user's account, use the `-Me` switch.
+    The `Get-YTUser` function returns a user from YouTrack. Pass the user's ID or login to the `User` parameter (you can
+    also pipe user objects, user IDs, and user logins in). To get the current user's account, use the `-Me` switch.
 
     .EXAMPLE
-    Get-YTUser -Session $script:session -User 'someusername'
+    Get-YTUser -Session $session -User 'someusername'
 
-    Demonstrates getting a user by its login name.
-
-    .EXAMPLE
-    Get-YTUser -Session $script:session -User '2-1'
-
-    Demonstrates getting a user by its id.
+    Demonstrates getting a user by login name.
 
     .EXAMPLE
-    $user, 'someusername', '2-1' | Get-YTUser -Session $script:session
+    Get-YTUser -Session $session -Me
 
-    Demonstrates getting multiple users by piping user objects, user logins, and/or user IDs to `Get-YTUser`.
+    Demonstrates getting the current user's account.
     #>
     [CmdletBinding()]
     param(
-        # The session object for a YouTrack session. Create a new Session using `New-YTSession`.
+        # The session object for a YouTrack session. Create a new session using `New-YTSession`.
         [Parameter(Mandatory)]
         [Object] $Session,
 
         # The ID or login name of the user to return.
-        [Parameter(Mandatory, ParameterSetName='SpecificUser', ValueFromPipeline, ValueFromPipelineByPropertyName)]
+        [Parameter(Mandatory, ParameterSetName = 'SpecificUser', ValueFromPipeline, ValueFromPipelineByPropertyName)]
         [Alias('login')]
         [Alias('id')]
         [String] $User,
 
         # Gets the current user's account.
-        [Parameter(Mandatory, ParameterSetName='Me')]
+        [Parameter(Mandatory, ParameterSetName = 'Me')]
         [switch] $Me,
 
-        # The properties/attributes to return. By default, all user properties are returned, Nested objects will not
-        # have any properties. Use `Get-YTEntityField` to create a property list that will return nested objects.
+        # The fields to return. By default, all user fields are returned with nested objects reduced to their `id`. Use
+        # `Get-YTEntityField` to build a field list that returns nested objects.
         [String[]] $Property
     )
 
@@ -67,6 +59,13 @@ function Get-YTUser
             $Property = Get-YTEntityField -Type $entityType -Depth 2
         }
 
-        return Invoke-YTRestMethod -Session $Session -Resource $resource -Property $Property
+        $headers = @{
+            'Accept' = 'application/json'
+            'Authorization' = "Bearer $($Session.ApiToken)"
+        }
+
+        $queryParams = @{ fields = ($Property -join ',') }
+
+        Invoke-RestMethod -Uri "$($Session.Url)$($resource)" -Headers $headers -Method Get -Body $queryParams
     }
 }

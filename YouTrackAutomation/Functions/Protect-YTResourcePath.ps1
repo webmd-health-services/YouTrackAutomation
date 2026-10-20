@@ -35,6 +35,8 @@ function Protect-YTResourcePath
     return `unsafe%3Fpath`.
     #>
     [CmdletBinding()]
+    [Diagnostics.CodeAnalysis.SuppressMessageAttribute('PSReviewUnusedParameter', 'SafeBasePath',
+        Justification = 'Referenced inside an & {} sub-expression, which the analyzer does not detect.')]
     param(
         # A safe base path that will be prepeneded to the path that is returned. No URL escaping is done to this path,
         # so it must come from code.
