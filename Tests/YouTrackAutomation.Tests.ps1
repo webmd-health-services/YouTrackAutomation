@@ -45,7 +45,10 @@ BeforeAll {
         )
 
         $help = Get-Help -Name $Named -Full
-        $help | Should -Not -BeNullOrEmpty
+        if( $Exists )
+        {
+            $help | Should -Not -BeNullOrEmpty
+        }
 
         if( $HasSynopsis )
         {

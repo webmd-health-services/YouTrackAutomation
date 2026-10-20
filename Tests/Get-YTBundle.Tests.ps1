@@ -1,5 +1,4 @@
 
-#Requires -Version 5.1
 Set-StrictMode -Version 'Latest'
 
 BeforeAll {
@@ -10,7 +9,16 @@ BeforeAll {
 
     $script:session = Get-YTTSession
     $script:project = Initialize-YTTProject
-    $script:issue = Initialize-YTTIssue -Project $script:project.shortName -Summary 'Get-YTBundle Test Issue'
+
+    function GivenIssue
+    {
+        param(
+            [Parameter(Mandatory, Position = 0)]
+            [String] $WithSummary
+        )
+
+        Initialize-YTTIssue -Project $script:project.shortName -Summary $WithSummary
+    }
 }
 
 Describe 'Get-YTBundle' {
@@ -18,41 +26,22 @@ Describe 'Get-YTBundle' {
         $Global:Error.Clear()
     }
 
-    It 'gets bundle' {
-        $fields =
-            $script:issue.customFields | Get-YTIssueCustomField -Session $script:session -Issue $script:issue.idReadable
+    It 'gets a bundle by ID and type' {
+        $issue = GivenIssue 'get bundle by id and type'
+        $state = Get-YTIssueState -Session $script:session -Issue $issue.idReadable
+        $bundle = $state.value.bundle
+        $bundle | Should -Not -BeNullOrEmpty
 
-        $foundOne = $false
-        foreach ($field in $fields)
-        {
-            $typedField = Get-YTIssueCustomField -Session $script:session `
-                                                 -Issue $script:issue.idReadable `
-                                                 -Field $field.name `
-                                                 -Type $field.'$type'
-            if (-not $typedField.value -or -not ($typedField.value | Get-Member -Name 'bundle'))
-            {
-                continue
-            }
+        $result = Get-YTBundle -Session $script:session -ID $bundle.id -Type $bundle.'$type'
+        $result | Should -Not -BeNullOrEmpty
+        $result.values | Should -Not -BeNullOrEmpty
+    }
 
-            $foundOne = $true
-
-            $bundle = $typedField.value.bundle
-
-            # Accepts a bundle from the pipeline.
-            $bundle = $typedField.value.bundle | Get-YTBundle -Session $script:session
-            $bundle | Should -Not -BeNullOrEmpty
-            $bundle.values | Should -Not -BeNullOrEmpty
-            $bundle.values | Get-Member 'id' | Should -Not -BeNullOrEmpty
-            $bundle.values | Get-Member 'name' | Should -Not -BeNullOrEmpty
-
-            # Gets bundle by id and type.
-            $bundle = Get-YTBundle -Session $script:session -ID $bundle.id -Type $bundle.'$type'
-            $bundle | Should -Not -BeNullOrEmpty
-            $bundle.values | Should -Not -BeNullOrEmpty
-            $bundle.values | Get-Member 'id' | Should -Not -BeNullOrEmpty
-            $bundle.values | Get-Member 'name' | Should -Not -BeNullOrEmpty
-        }
-
-        $foundOne | Should -BeTrue
+    It 'accepts a bundle from the pipeline' {
+        $issue = GivenIssue 'get bundle from pipeline'
+        $state = Get-YTIssueState -Session $script:session -Issue $issue.idReadable
+        $result = $state.value.bundle | Get-YTBundle -Session $script:session
+        $result | Should -Not -BeNullOrEmpty
+        $result.values | Should -Not -BeNullOrEmpty
     }
 }

@@ -6,27 +6,18 @@ function New-YTProject
     Creates a new project in YouTrack.
 
     .DESCRIPTION
-    The `New-YTProject` function creates a new project in YouTrack. The function requires the following parameters:
-
-    * `Name`: The name of the project.
-    * `ShortName`: The short name of the project.
-    * `LeaderID`: The user id of the project owner.
+    The `New-YTProject` function creates a new project in YouTrack. Pass the project name to the `Name` parameter, its
+    short name to the `ShortName` parameter, and the user ID of the project's owner to the `LeaderID` parameter. Use
+    `Get-YTUser` to look up a user's ID by login.
 
     .EXAMPLE
     New-YTProject -Session $session -Name 'Demo Project' -ShortName 'DEMO' -LeaderID '2-1'
 
-    Demonstrates creating a new project in YouTrack with the name `Demo Project`, the short name `DEMO`, and the project
-    owner `admin`.
-
-    .EXAMPLE
-    New-YTProject -Session $session -Name 'Demo Project' -ShortName 'DEMO' -LeaderID '2-1'
-
-    Demonstrates creating a new project in YouTrack with the name `Demo Project`, the short name `DEMO`, and the project
-    owner `admin`, but using the project owner's id instead of their name.
+    Demonstrates creating a project named `Demo Project` with short name `DEMO`, owned by the user with ID `2-1`.
     #>
-    [CmdletBinding()]
+    [CmdletBinding(SupportsShouldProcess)]
     param(
-        # The session object for a YouTrack Session. Create a new Session using `New-YTSession`.
+        # The session object for a YouTrack session. Create a new session using `New-YTSession`.
         [Parameter(Mandatory)]
         [Object] $Session,
 
@@ -38,7 +29,7 @@ function New-YTProject
         [Parameter(Mandatory)]
         [String] $ShortName,
 
-        # The user id of the project owner. Use `Get-YTUser` to find users by login to get their IDs.
+        # The user ID of the project owner. Use `Get-YTUser` to find a user's ID by login.
         [Parameter(Mandatory)]
         [String] $LeaderID,
 
@@ -49,24 +40,22 @@ function New-YTProject
         [ValidateSet('scrum', 'kanban')]
         [String] $Template,
 
-        # Additional fields to include in the response.
+        # The fields to return on the created project.
         [String[]] $Property
     )
 
     Set-StrictMode -Version 'Latest'
     Use-CallerPreference -Cmdlet $PSCmdlet -SessionState $ExecutionContext.SessionState
 
-    $body = @{
-        name = $Name;
-        shortName = $ShortName;
-        leader = @{
-            id = $LeaderID;
-        };
+    $project = @{
+        name = $Name
+        shortName = $ShortName
+        leader = @{ id = $LeaderID }
     }
 
     if ($Description)
     {
-        $body['description'] = $Description
+        $project['description'] = $Description
     }
 
     if (-not $Property)
@@ -74,16 +63,25 @@ function New-YTProject
         $Property = Get-YTEntityField -Type 'Project'
     }
 
-    $queryParams = @{}
+    $fields = [Uri]::EscapeUriString(($Property -join ','))
+    $url = "$($Session.Url)admin/projects?fields=${fields}"
     if ($Template)
     {
-        $queryParams['template'] = $Template
+        $url += "&template=$($Template)"
     }
 
-    Invoke-YTRestMethod -Session $Session `
-                        -Resource 'admin/projects' `
-                        -Body $body `
-                        -Property $Property `
-                        -Method Post `
-                        -QueryParameter $queryParams
+    $body = $project | ConvertTo-Json -Depth 50
+
+    $headers = @{
+        'Accept' = 'application/json'
+        'Content-Type' = 'application/json'
+        'Authorization' = "Bearer $($Session.ApiToken)"
+    }
+
+    if (-not $PSCmdlet.ShouldProcess($ShortName, 'create project'))
+    {
+        return
+    }
+
+    Invoke-RestMethod -Method Post -Uri $url -Headers $headers -Body $body
 }

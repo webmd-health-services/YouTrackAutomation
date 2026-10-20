@@ -18,7 +18,7 @@
     RootModule = 'YouTrackAutomation.psm1'
 
     # Version number of this module.
-    ModuleVersion = '2.0.0'
+    ModuleVersion = '3.0.0'
 
     # ID used to uniquely identify this module
     GUID = '296b12f7-2941-47a4-94cb-9b6575231caa'
@@ -76,21 +76,34 @@
 
     # Functions to export from this module. Only list public function here.
     FunctionsToExport = @(
+        'Add-YTComment',
+        'Add-YTTag',
+        'Add-YTWork',
+        'ConvertTo-MarkdownTable',
+        'ConvertTo-YTObj',
+        'ConvertTo-YTString',
+        'Find-YTDescription',
         'Get-YTBundle',
         'Get-YTEntityField',
         'Get-YTIssue',
         'Get-YTIssueCustomField',
         'Get-YTIssueState',
         'Get-YTProject',
+        'Get-YTTag',
         'Get-YTUser',
         'Invoke-YTCommand',
-        'Invoke-YTRestMethod',
-        'Protect-YTResourcePath',
         'New-YTIssue',
         'New-YTProject',
         'New-YTSession',
+        'Protect-YTResourcePath',
         'Remove-YTProject',
-        'Set-YTIssueState'
+        'Resolve-YTProjectId',
+        'Set-YTIssueAssignee',
+        'Set-YTIssueCustomField',
+        'Set-YTIssueDescription',
+        'Set-YTIssueLink',
+        'Set-YTIssueState',
+        'Set-YTTag'
     )
 
     # Cmdlets to export from this module. By default, you get a script module, so there are no cmdlets.

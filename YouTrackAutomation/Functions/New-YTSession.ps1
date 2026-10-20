@@ -6,51 +6,41 @@ function New-YTSession
     Creates a new YouTrack session object.
 
     .DESCRIPTION
-    The New-YTSession function creates a session object required by most YouTrackAutomation functions. Pass the YouTrack
-    URL to the `Url` parameter and your API token to the `ApiToken` parameter. The URL should *not* include the path
-    `/api/` at the end.
+    The `New-YTSession` function creates a session object required by most YouTrackAutomation functions. Pass the base
+    URL to the YouTrack instance (just the protocol and hostname) to the `Url` parameter and your API token to the
+    `ApiToken` parameter.
 
-    To connect to YouTrack with a credential, pass the credential to the `Credential` parameter.
+    The returned object's `Url` property has the REST API path `/api/` appended to it, so the rest of the module's
+    functions build resource URLs by concatenating the resource path onto `$session.Url`.
 
     .EXAMPLE
     $session = New-YTSession -Url 'https://my-youtrack-instance.com' -ApiToken 'my-api-key'
 
     Demonstrates creating a session that connects to the REST API at 'https://my-youtrack-instance.com/api/' using an
     API token.
-
-    .EXAMPLE
-    $session = New-YTSession -Url 'https://my-youtrack-instance.com' -Credential $me
-
-    Demonstrates connecting to YouTrack using a credential instead of an API key.
     #>
     [CmdletBinding()]
+    [Diagnostics.CodeAnalysis.SuppressMessageAttribute('PSUseShouldProcessForStateChangingFunctions', '',
+        Justification = 'Creates an in-memory session object only; it changes no system state.')]
     param(
-        # The URL to the YouTrack instance's rest API, without the path `/api/` at the end.
+        # The base URL of the YouTrack instance, e.g. `https://youtrack.example.com`. Do not include the `/api/` path;
+        # it is added for you.
         [Parameter(Mandatory)]
-        [Uri] $Url,
+        [String] $Url,
 
-        # The API token to use when connecting to YouTrack. Sent to each request to YouTrack in the "Authorization"
-        # HTTP header as `Bearer ${ApiToken}`.
-        [Parameter(Mandatory, ParameterSetName='ApiToken')]
-        [String] $ApiToken,
-
-        # The credential to use when connecting to YouTrack. Sent to each request to YouTrack in the "Authorization"
-        # HTTP header as `Basic CREDENTIAL`, where `CREDENTIAL` is the base64-encoded username/password.
-        [Parameter(Mandatory, ParameterSetName='WithCredential')]
-        [pscredential] $Credential
+        # The API token to use when connecting to YouTrack. Sent on each request in the `Authorization` HTTP header as
+        # `Bearer ${ApiToken}`.
+        [Parameter(Mandatory)]
+        [String] $ApiToken
     )
 
     Set-StrictMode -Version 'Latest'
     Use-CallerPreference -Cmdlet $PSCmdlet -SessionState $ExecutionContext.SessionState
 
-    if (-not $Url.AbsolutePath.EndsWith('/'))
-    {
-        $Url = [Uri]"${Url}/"
-    }
+    $Url = $Url.TrimEnd('/')
 
     return [pscustomobject]@{
-        Url = $Url
+        Url = "${Url}/api/"
         ApiToken = $ApiToken
-        Credential = $Credential
     }
 }

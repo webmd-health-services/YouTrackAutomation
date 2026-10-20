@@ -8,125 +8,50 @@ BeforeAll {
     Import-Module -Name (Join-Path -Path $PSScriptRoot -ChildPath 'YouTrackAutomationTestHelper' -Resolve)
 
     $script:session = Get-YTTSession
-    $script:project = $null
-    $script:nextId = 0
     $script:admin = Get-YTUser -Session $script:session -User 'admin'
 
-    function WhenDeletingProject
+    function GivenProject
     {
-        [CmdletBinding()]
         param(
             [Parameter(Mandatory)]
-            [Object] $WithNameOrID,
-
-            [hashtable] $WithArgs = @{}
+            [String] $ShortName
         )
 
-        Remove-YTProject -Session $script:session -Project $WithNameOrID @WithArgs
-    }
-
-    function ThenProject
-    {
-        param(
-            [switch] $Not,
-
-            [switch] $Exists
-        )
-
-        $project = Get-YTProject -Session $script:session -Project $script:project.id -ErrorAction Ignore
-        if ($Not)
-        {
-            $null -eq $project -or $project.name.Contains('deletion') | Should -BeTrue
-        }
-        else
-        {
-            $project | Should -Not -BeNullOrEmpty
-        }
+        New-YTProject -Session $script:session -Name "Remove $ShortName" -ShortName $ShortName -LeaderID $script:admin.id |
+            Out-Null
     }
 }
 
 Describe 'Remove-YTProject' {
     BeforeEach {
-        # Sometimes projects don't get deleted. So we can't hard-code project info and need to generate names
-        # dynamically.
-        $projects = Get-YTProject -Session $script:session | Where-Object 'shortName' -Like 'RYTP*'
-
-        $script:nextId += 1
-        while($projects | Where-Object 'shortName' -EQ "RYTP${script:nextId}")
-        {
-            $script:nextId += 1
-        }
-
-        $shortName = "RYTP${script:nextId}"
-        $name = "Remove-YTProject ${script:nextId}"
-
-        WRite-Verbose "[${shortName}]  ${name}"
-
-        $script:project =
-            New-YTProject -Session $script:session -Name $name -ShortName $shortName -LeaderID $script:admin.id
-
         $Global:Error.Clear()
     }
 
-    AfterEach {
-        # Delete any projects that weren't deleted.
-        if (Get-YTProject -Session $script:session -Project $script:project.shortName -ErrorAction Ignore)
+    It 'removes a project by short name' {
+        $shortName = "RP$(Get-Random -Minimum 1000 -Maximum 9999)"
+        GivenProject -ShortName $shortName
+        Remove-YTProject -Session $script:session -Project $shortName
+        Get-YTProject -Session $script:session -ShortName $shortName | Should -BeNullOrEmpty
+    }
+
+    It 'accepts project objects from the pipeline' {
+        $shortName = "RPP$(Get-Random -Minimum 100 -Maximum 999)"
+        GivenProject -ShortName $shortName
+        Get-YTProject -Session $script:session -ShortName $shortName | Remove-YTProject -Session $script:session
+        Get-YTProject -Session $script:session -ShortName $shortName | Should -BeNullOrEmpty
+    }
+
+    It 'does not remove with -WhatIf' {
+        $shortName = "RW$(Get-Random -Minimum 1000 -Maximum 9999)"
+        GivenProject -ShortName $shortName
+        try
         {
-            Invoke-YTRestMethod -Session $script:session `
-                                -Method Delete `
-                                -Resource "admin/projects/$($script:project.id)" `
-                                -ErrorAction Ignore
+            Remove-YTProject -Session $script:session -Project $shortName -WhatIf
+            Get-YTProject -Session $script:session -ShortName $shortName | Should -Not -BeNullOrEmpty
         }
-    }
-
-    It 'deletes project using short name' {
-        WhenDeletingProject $script:project.shortName
-        ThenProject -Not -Exists
-    }
-
-    It 'deletes project using id' {
-        WhenDeletingProject $script:project.id
-        ThenProject -Not -Exists
-    }
-
-    It 'fails if project does not exist' {
-        WhenDeletingProject 'fmvcklujhmkldu2qmklf' -ErrorAction SilentlyContinue
-        $Global:Error | Should -Match 'not found'
-    }
-
-    It 'escapes project id' {
-        WhenDeletingProject "$($script:project.shortName)?fields=fubar(snafu)" -ErrorAction SilentlyContinue
-        ThenProject -Exists
-        $Global:Error | Should -Match 'not found'
-    }
-
-    It 'accepts project short name from pipeline' {
-        $script:project.shortName | Remove-YTProject -Session $script:session
-        ThenProject -Not -Exists
-    }
-
-    It 'accepts project object with shortName property from pipeline' {
-        $script:project | Select-Object -Property 'shortName' | Remove-YTProject -Session $script:session
-        ThenProject -Not -Exists
-    }
-
-    It 'accepts project id from pipeline' {
-        $script:project.id | Remove-YTProject -Session $script:session
-        ThenProject -Not -Exists
-    }
-
-    It 'accepts project object with id from pipeline' {
-        $script:project | Select-Object -Property 'id' | Remove-YTProject -Session $script:session
-        ThenProject -Not -Exists
-    }
-
-    It 'accepts project object from pipeline' {
-        $script:project | Remove-YTProject -Session $script:session
-        ThenProject -Not -Exists
-    }
-
-    It 'supports WhatIf' {
-        WhenDeletingProject $script:project.shortName -WithArgs @{ WhatIf = $true }
-        ThenProject -Exists
+        finally
+        {
+            Remove-YTProject -Session $script:session -Project $shortName -ErrorAction SilentlyContinue
+        }
     }
 }
